@@ -382,7 +382,8 @@ const cards = [
     "correct": 0,
     "e": "Люблінська унія 1569 року створила федеративну державу — Річ Посполиту — зі спільним монархом і сеймом. Більшість українських земель, які до того належали Великому князівству Литовському, зокрема Волинь, Київщина та Брацлавщина, перейшли під владу Польської Корони. Це стало важливим рубежем литовської доби в історії України."
   }
-];=[], position=0, points=0, mistakes=[], answered=false, currentAnswers=[];
+];
+let order=[], position=0, points=0, mistakes=[], answered=false, currentAnswers=[];
 
 function showScreen(id){
  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
