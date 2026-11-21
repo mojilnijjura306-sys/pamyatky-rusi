@@ -45,6 +45,9 @@ h2{font-size:27px;line-height:1.15;margin:12px 0}
 .flip-card{position:relative;min-height:190px;transform-style:preserve-3d;transition:transform .65s cubic-bezier(.2,.7,.2,1)}
 .flip-card.flipped{transform:rotateY(180deg)}
 .flip-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;padding:18px;background:#f0ede4;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box}
+.card-photo{display:none;width:100%;height:190px;object-fit:cover;border-radius:12px;margin:0 0 12px;background:#e4dfd4}
+.photo-credit{display:none;font:10px/1.4 system-ui;color:var(--muted);margin:-5px 0 12px}
+.photo-credit a{color:inherit;text-decoration:underline}
 .flip-back{transform:rotateY(180deg);background:#e8eee6;border:1px solid #cbd9cc}
 .flip-back strong{font:700 11px system-ui;letter-spacing:1px;text-transform:uppercase;color:#54745e}
 .flip-back p{font:14px/1.55 system-ui;margin:10px 0 0}
@@ -97,6 +100,8 @@ footer{text-align:center;margin-top:25px;font:12px system-ui;color:var(--muted)}
  <div class="flip-wrap">
   <div class="flip-card" id="flipCard">
    <div class="flip-face">
+    <img class="card-photo" id="cardPhoto" alt="">
+    <div class="photo-credit" id="photoCredit"></div>
     <div class="category" id="category"></div>
     <h2 id="title"></h2>
     <div class="question" id="question"></div>
@@ -128,11 +133,11 @@ footer{text-align:center;margin-top:25px;font:12px system-ui;color:var(--muted)}
 
 <script>
 const cards = [
-{c:"Архітектура",t:"Софійський собор у Києві",q:"За правління якого князя було споруджено Софійський собор у Києві?",a:["Ярослава Мудрого","Володимира Великого","Святослава Ігоровича"],correct:0,e:"Софійський собор постав у першій половині XI століття, за князювання Ярослава Мудрого. Він став визначною пам’яткою архітектури та монументального мистецтва Русі."},
-{c:"Архітектура",t:"Золоті ворота",q:"Яку функцію виконували Золоті ворота стародавнього Києва?",a:["Оборонну та в’їзну","Лише торговельну","Були князівською усипальницею"],correct:0,e:"Золоті ворота були головною урочистою брамою укріпленого Києва та частиною його оборонної системи. Їх спорудження пов’язують із добою Ярослава Мудрого."},
-{c:"Архітектура",t:"Михайлівський Видубицький монастир",q:"На якому березі Дніпра розташований Видубицький монастир?",a:["На правому","На лівому","На острові посеред Дніпра"],correct:0,e:"Видубицький монастир розташований на правому березі Дніпра в Києві. Його історія сягає XI століття."},
-{c:"Архітектура",t:"Спасо-Преображенський собор",q:"У якому місті розташований Спасо-Преображенський собор — одна з найдавніших збережених споруд Русі?",a:["Чернігові","Переяславі","Володимирі"],correct:0,e:"Спасо-Преображенський собор у Чернігові закладено в XI столітті за князя Мстислава Володимировича. Це видатна пам’ятка давньоруської архітектури."},
-{c:"Архітектура",t:"Успенський собор Києво-Печерського монастиря",q:"У якому столітті було споруджено первісний Успенський собор Києво-Печерського монастиря?",a:["XI столітті","IX столітті","XIV столітті"],correct:0,e:"Первісний Успенський собор Києво-Печерського монастиря спорудили у другій половині XI століття. Він став важливим духовним і культурним центром."},
+{c:"Архітектура",t:"Софійський собор у Києві",q:"За правління якого князя було споруджено Софійський собор у Києві?",a:["Ярослава Мудрого","Володимира Великого","Святослава Ігоровича"],correct:0,e:"Софійський собор постав у першій половині XI століття, за князювання Ярослава Мудрого. Він став визначною пам’яткою архітектури та монументального мистецтва Русі.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/St.Sophia_Cathedral%2C_Kyiv%2C_Ukraine.jpg/1280px-St.Sophia_Cathedral%2C_Kyiv%2C_Ukraine.jpg",credit:"Фото: Ivan Sedlovskyi · CC BY-SA 4.0",source:"https://commons.wikimedia.org/wiki/File:St.Sophia_Cathedral,_Kyiv,_Ukraine.jpg"}
+{c:"Архітектура",t:"Золоті ворота",q:"Яку функцію виконували Золоті ворота стародавнього Києва?",a:["Оборонну та в’їзну","Лише торговельну","Були князівською усипальницею"],correct:0,e:"Золоті ворота були головною урочистою брамою укріпленого Києва та частиною його оборонної системи. Їх спорудження пов’язують із добою Ярослава Мудрого.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Golden_Gate%2C_Kyiv.jpg/1280px-Golden_Gate%2C_Kyiv.jpg",credit:"Фото: Nick Grapsy · CC BY-SA 4.0",source:"https://commons.wikimedia.org/wiki/File:Golden_Gate,_Kyiv.jpg"}
+{c:"Архітектура",t:"Михайлівський Видубицький монастир",q:"На якому березі Дніпра розташований Видубицький монастир?",a:["На правому","На лівому","На острові посеред Дніпра"],correct:0,e:"Видубицький монастир розташований на правому березі Дніпра в Києві. Його історія сягає XI століття.",img:"https://commons.wikimedia.org/wiki/Special:FilePath/Vydubychi_Monastery_(2).jpg?width=1200",credit:"Фото: Xsandriel · CC BY-SA 4.0",source:"https://commons.wikimedia.org/wiki/File:Vydubychi_Monastery_(2).jpg"}
+{c:"Архітектура",t:"Спасо-Преображенський собор",q:"У якому місті розташований Спасо-Преображенський собор — одна з найдавніших збережених споруд Русі?",a:["Чернігові","Переяславі","Володимирі"],correct:0,e:"Спасо-Преображенський собор у Чернігові закладено в XI столітті за князя Мстислава Володимировича. Це видатна пам’ятка давньоруської архітектури.",img:"https://commons.wikimedia.org/wiki/Special:FilePath/Chernihiv_-_Spasopreobrazhensky_cathedral.jpg?width=1200",credit:"Фото: Віктор Полянко · CC BY-SA 4.0",source:"https://commons.wikimedia.org/wiki/File:Chernihiv_-_Spasopreobrazhensky_cathedral.jpg"}
+{c:"Архітектура",t:"Успенський собор Києво-Печерського монастиря",q:"У якому столітті було споруджено первісний Успенський собор Києво-Печерського монастиря?",a:["XI столітті","IX столітті","XIV столітті"],correct:0,e:"Первісний Успенський собор Києво-Печерського монастиря спорудили у другій половині XI століття. Він став важливим духовним і культурним центром. На фото — відбудований собор, а не споруда XI століття.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Kiev_Pechersk_Lavra_Dormition_Cathedral.jpg/1280px-Kiev_Pechersk_Lavra_Dormition_Cathedral.jpg",credit:"Фото: Аимаина хикари · CC0 1.0",source:"https://commons.wikimedia.org/wiki/File:Kiev_Pechersk_Lavra_Dormition_Cathedral.jpg"}
 {c:"Мозаїки та фрески",t:"Богородиця Оранта",q:"Як називається тип зображення Богородиці з піднятими в молитві руками?",a:["Оранта","Одигітрія","Елеуса"],correct:0,e:"Оранта — іконографічний тип, у якому Богородицю зображують із піднятими руками в молитовному жесті. Знаменита мозаїка Оранти збереглася в Софійському соборі Києва."},
 {c:"Мозаїки та фрески",t:"Христос Пантократор",q:"Що означає назва «Пантократор» у християнському мистецтві?",a:["Вседержитель","Учитель апостолів","Цар земний"],correct:0,e:"Пантократор — образ Христа як Вседержителя, володаря світу. Такі зображення часто розміщували в центральній частині храмових куполів."},
 {c:"Мозаїки та фрески",t:"Фрески Софійського собору",q:"Що таке фреска?",a:["Живопис на вологій штукатурці","Мозаїка зі скла","Різьблення по каменю"],correct:0,e:"Фреска — техніка настінного живопису водяними фарбами по свіжій, вологій штукатурці. У Софійському соборі збереглися численні фрескові композиції."},
@@ -173,6 +178,9 @@ function renderCard(){
  document.getElementById("category").textContent=card.c;
  document.getElementById("title").textContent=card.t;
  document.getElementById("question").textContent=card.q;
+ const photo=document.getElementById("cardPhoto"), credit=document.getElementById("photoCredit");
+ if(card.img){photo.src=card.img;photo.alt="Фотографія пам’ятки: "+card.t;photo.style.display="block";credit.innerHTML="";const link=document.createElement("a");link.href=card.source;link.target="_blank";link.rel="noopener";link.textContent=card.credit;credit.appendChild(link);credit.style.display="block";}
+ else{photo.removeAttribute("src");photo.style.display="none";credit.style.display="none";}
  document.getElementById("flipCard").classList.remove("flipped");
  document.getElementById("answerText").textContent="";
  document.getElementById("flipHint").textContent="Обери відповідь — картка перевернеться й відкриє пояснення";
