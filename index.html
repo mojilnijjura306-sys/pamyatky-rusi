@@ -42,10 +42,10 @@ h2{font-size:27px;line-height:1.15;margin:12px 0}
 .option.correct{background:#e3eee5;border-color:#50816a}
 .option.wrong{background:#f8e7e2;border-color:#bd6a55}
 .flip-wrap{perspective:1000px;margin:10px 0 18px}
-.flip-card{position:relative;min-height:190px;transform-style:preserve-3d;transition:transform .65s cubic-bezier(.2,.7,.2,1)}
+.flip-card{position:relative;display:grid;grid-template-columns:minmax(0,1fr);transform-style:preserve-3d;transition:transform .65s cubic-bezier(.2,.7,.2,1)}
 .flip-card.flipped{transform:rotateY(180deg)}
-.flip-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;padding:18px;background:#f0ede4;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box}
-.card-photo{display:none;width:100%;height:190px;object-fit:cover;border-radius:12px;margin:0 0 12px;background:#e4dfd4}
+.flip-face{position:relative;grid-area:1/1;min-width:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;padding:18px;background:#f0ede4;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box}
+.card-photo{display:block;flex:0 0 190px;width:100%;height:190px;object-fit:cover;border-radius:12px;margin:0 0 12px;background:#e4dfd4}
 .photo-credit{display:none;font:10px/1.4 system-ui;color:var(--muted);margin:-5px 0 12px}
 .photo-credit a{color:inherit;text-decoration:underline}
 .flip-back{transform:rotateY(180deg);background:#e8eee6;border:1px solid #cbd9cc}
@@ -179,7 +179,7 @@ function renderCard(){
  document.getElementById("title").textContent=card.t;
  document.getElementById("question").textContent=card.q;
  const photo=document.getElementById("cardPhoto"), credit=document.getElementById("photoCredit");
- if(card.img){photo.onerror=()=>{photo.style.display="none";credit.innerHTML="";const fallback=document.createElement("a");fallback.href=card.source;fallback.target="_blank";fallback.rel="noopener";fallback.textContent="Фото недоступне — відкрити першоджерело";credit.appendChild(fallback);credit.style.display="block";};photo.onload=()=>{photo.style.display="block";};photo.alt="Фотографія пам’ятки: "+card.t;photo.src=card.img;photo.style.display="block";credit.innerHTML="";const link=document.createElement("a");link.href=card.source;link.target="_blank";link.rel="noopener";link.textContent=card.credit;credit.appendChild(link);credit.style.display="block";}
+ if(card.img){photo.onerror=()=>{photo.style.display="none";credit.innerHTML="";const fallback=document.createElement("a");fallback.href=card.source;fallback.target="_blank";fallback.rel="noopener";fallback.textContent="Фото недоступне — відкрити першоджерело";credit.appendChild(fallback);credit.style.display="block";};photo.onload=()=>{photo.style.display="block";};photo.alt="Фотографія пам’ятки: "+card.t;photo.loading="eager";photo.decoding="async";photo.style.display="block";photo.src=card.img;credit.innerHTML="";const link=document.createElement("a");link.href=card.source;link.target="_blank";link.rel="noopener";link.textContent=card.credit;credit.appendChild(link);credit.style.display="block";}
  else{photo.removeAttribute("src");photo.style.display="none";credit.innerHTML="";if(card.source){const link=document.createElement("a");link.href=card.source;link.target="_blank";link.rel="noopener";link.textContent="Наукове джерело до картки";credit.appendChild(link);credit.style.display="block";}else{credit.style.display="none";}}
  document.getElementById("flipCard").classList.remove("flipped");
  document.getElementById("answerText").textContent="";
