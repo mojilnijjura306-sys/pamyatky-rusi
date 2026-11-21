@@ -1,0 +1,470 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#203b35">
+<title>Галицько-Волинська держава — інтерактивна гра</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root {
+  --green:#284c40;
+  --gold:#bd9657;
+  --paper:#f5f0e5;
+  --ink:#24332e;
+  --muted:#758078;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:Georgia,"Times New Roman",serif;
+}
+main{max-width:760px;margin:auto;padding:25px 20px 45px}
+header{text-align:center;padding:20px 0 25px}
+.eyebrow{font:600 11px system-ui;letter-spacing:3px;color:var(--gold);text-transform:uppercase}
+h1{font-size:clamp(38px,9vw,58px);line-height:1;margin:18px 0 12px}
+.subtitle{font:15px/1.5 system-ui;color:var(--muted)}
+.panel{background:#fffdf8;border:1px solid #e5ddce;border-radius:22px;padding:22px}
+.topline{display:flex;justify-content:space-between;gap:10px;align-items:center;font:13px system-ui;color:var(--muted)}
+.progress{height:7px;background:#e9e3d7;border-radius:10px;margin:16px 0 22px;overflow:hidden}
+.progress div{height:100%;width:0;background:var(--gold);transition:width .3s}
+.category{font:700 11px system-ui;letter-spacing:1.5px;text-transform:uppercase;color:#8b7045}
+/* У режимі запитань не показуємо тематичні підказки */
+#category,#title{display:none}
+h2{font-size:27px;line-height:1.15;margin:12px 0}
+.question{font:16px/1.5 system-ui;color:#53615b;margin:12px 0 20px}
+.options{display:grid;gap:10px}
+.option{
+ width:100%;text-align:left;padding:14px 15px;border:1px solid #ded8cb;
+ border-radius:13px;background:white;color:var(--ink);
+ font:15px/1.4 system-ui;cursor:pointer;
+}
+.option:disabled{cursor:default;opacity:1}
+.option.correct{background:#e3eee5;border-color:#50816a}
+.option.wrong{background:#f8e7e2;border-color:#bd6a55}
+.flip-wrap{perspective:1000px;margin:10px 0 18px}
+.flip-card{position:relative;display:grid;grid-template-columns:minmax(0,1fr);transform-style:preserve-3d;transition:transform .65s cubic-bezier(.2,.7,.2,1)}
+.flip-card.flipped{transform:rotateY(180deg)}
+.flip-face{position:relative;grid-area:1/1;min-width:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;padding:18px;background:#f0ede4;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box}
+.card-photo{display:block;flex:0 0 190px;width:100%;height:190px;object-fit:cover;border-radius:12px;margin:0 0 12px;background:#e4dfd4}
+.photo-credit{display:none;font:10px/1.4 system-ui;color:var(--muted);margin:-5px 0 12px}
+.photo-credit a{color:inherit;text-decoration:underline}
+.flip-back{transform:rotateY(180deg);background:#e8eee6;border:1px solid #cbd9cc}
+.flip-back strong{font:700 11px system-ui;letter-spacing:1px;text-transform:uppercase;color:#54745e}
+.flip-back p{font:14px/1.55 system-ui;margin:10px 0 0}
+.flip-hint{font:12px system-ui;color:var(--muted);text-align:center;margin:0 0 12px}
+.actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+button.primary,button.secondary{
+ border:0;border-radius:13px;padding:14px 18px;font:600 14px system-ui;cursor:pointer
+}
+button.primary{background:var(--green);color:white;flex:1}
+button.secondary{background:#e9e3d7;color:var(--ink)}
+button:disabled{opacity:.45;cursor:default}
+.stats{display:flex;justify-content:space-between;gap:8px;margin:18px 0;font:12px system-ui;color:var(--muted)}
+.stat strong{display:block;font-size:21px;color:var(--green)}
+.screen{display:none}
+.screen.active{display:block}
+.result{text-align:center;padding:25px 10px}
+.result .score{font-size:65px;color:var(--green);margin:12px}
+.result p{font:15px/1.6 system-ui;color:var(--muted)}
+footer{text-align:center;margin-top:25px;font:12px system-ui;color:var(--muted)}
+@media(max-width:420px){main{padding:15px 13px 35px}.panel{padding:17px}h2{font-size:24px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+ <div class="eyebrow">Історична інтерактивна колекція</div>
+ <h1>Галицько-<br>Волинська держава</h1>
+ <div class="subtitle">Досліджуй князів, дипломатію, культуру та події XIII–XIV століть</div>
+</header>
+
+<section id="intro" class="screen active panel">
+ <div class="category">Навчальна гра</div>
+ <h2>Історія Галицько-Волинської держави</h2>
+ <p class="question">На тебе чекають 20 запитань про князів, державний розвиток, монгольську навалу, дипломатію, міста та культуру.</p>
+ <div class="stats">
+  <div class="stat"><strong>20</strong>карток</div>
+  <div class="stat"><strong>5</strong>розділів</div>
+  <div class="stat"><strong>∞</strong>можливість повторити</div>
+ </div>
+ <button class="primary" id="startGameButton" type="button">Розпочати дослідження</button>
+ <footer>Обирай відповідь, читай пояснення та перевіряй свої знання.</footer>
+</section>
+
+<section id="game" class="screen panel">
+ <div class="topline">
+  <span id="counter">Картка 1 із 20</span>
+  <span id="score">Правильно: 0</span>
+ </div>
+ <div class="progress"><div id="bar"></div></div>
+ <div class="flip-wrap">
+  <div class="flip-card" id="flipCard">
+   <div class="flip-face">
+    <img class="card-photo" id="cardPhoto" alt="">
+    <div class="photo-credit" id="photoCredit"></div>
+    <div class="category" id="category"></div>
+    <h2 id="title"></h2>
+    <div class="question" id="question"></div>
+   </div>
+   <div class="flip-face flip-back">
+    <strong id="answerLabel">Історична довідка</strong>
+    <p id="answerText"></p>
+   </div>
+  </div>
+ </div>
+ <div class="flip-hint" id="flipHint">Обери відповідь — картка перевернеться й відкриє пояснення</div>
+ <div class="options" id="options"></div>
+ <div class="actions">
+  <button class="primary" id="next" disabled onclick="nextCard()">Наступна картка →</button>
+ </div>
+</section>
+
+<section id="result" class="screen panel result">
+ <div class="category">Дослідження завершено</div>
+ <h2>Твій результат</h2>
+ <div class="score" id="finalScore">0/20</div>
+ <p id="resultText"></p>
+ <button class="primary" onclick="startGame(false)">Пройти ще раз</button>
+ <button class="secondary" id="mistakesButton" onclick="startGame(true)" style="margin-top:12px;width:100%">Повторити помилки</button>
+</section>
+
+<footer>Навчальний проєкт «Українські землі у складі Великого князівства Литовського»</footer>
+</main>
+
+<script>
+const cards = [
+  {
+    "c": "Утворення держави",
+    "t": "Об’єднання земель",
+    "q": "У якому році Роман Мстиславич об’єднав Галицьке та Волинське князівства?",
+    "a": [
+      "1199 року",
+      "1187 року",
+      "1240 року"
+    ],
+    "correct": 0,
+    "e": "У 1199 році волинський князь Роман Мстиславич утвердився в Галичі й об’єднав Галицьку та Волинську землі. Цю дату традиційно вважають початком єдиної Галицько-Волинської держави."
+  },
+  {
+    "c": "Утворення держави",
+    "t": "Князь-засновник",
+    "q": "Яким князем був Роман Мстиславич до об’єднання Галичини з Волинню?",
+    "a": [
+      "Волинським",
+      "Чернігівським",
+      "Переяславським"
+    ],
+    "correct": 0,
+    "e": "Роман Мстиславич був волинським князем із династії Рюриковичів. Спираючись на Волинь, він поширив свою владу на Галичину й створив потужне політичне об’єднання."
+  },
+  {
+    "c": "Утворення держави",
+    "t": "Загибель Романа",
+    "q": "У якому році загинув Роман Мстиславич під час походу до Польщі?",
+    "a": [
+      "1205 року",
+      "1199 року",
+      "1223 року"
+    ],
+    "correct": 0,
+    "e": "Роман Мстиславич загинув у 1205 році під час конфлікту з польськими князями поблизу Завихоста. Після його смерті розпочалася тривала боротьба за владу, а єдність держави опинилася під загрозою."
+  },
+  {
+    "c": "Утворення держави",
+    "t": "Спадкоємці Романа",
+    "q": "Хто успадкував права на галицько-волинський престол після смерті Романа Мстиславича?",
+    "a": [
+      "Данило та Василько",
+      "Лев і Юрій",
+      "Мстислав та Ізяслав"
+    ],
+    "correct": 0,
+    "e": "Синами Романа Мстиславича були Данило й Василько. Після загибелі батька вони були ще дітьми, тому боротьба за їхню спадщину тривала багато років. Згодом брати спільно відновлювали владу династії Романовичів."
+  },
+  {
+    "c": "Боротьба за владу",
+    "t": "Галицьке боярство",
+    "q": "Яка суспільна верства мала особливо великий політичний вплив у Галичині на початку XIII століття?",
+    "a": [
+      "Великі бояри",
+      "Міські ремісники",
+      "Селянські громади"
+    ],
+    "correct": 0,
+    "e": "Галицьке боярство володіло значними землями й ресурсами та прагнуло впливати на князівську владу. Боротьба князів із боярською опозицією стала однією з головних причин політичної нестабільності після смерті Романа."
+  },
+  {
+    "c": "Відновлення держави",
+    "t": "Повернення Данила",
+    "q": "У якому році Данило Романович утвердився в Галичі та відновив єдність основних земель держави?",
+    "a": [
+      "1238 року",
+      "1205 року",
+      "1253 року"
+    ],
+    "correct": 0,
+    "e": "У 1238 році Данило Романович повернув собі Галич. Ця подія стала важливим етапом відновлення Галицько-Волинської держави після десятиліть міжусобиць і втручання сусідніх правителів."
+  },
+  {
+    "c": "Відновлення держави",
+    "t": "Битва під Дорогичином",
+    "q": "Проти якого ордену Данило Романович воював у битві під Дорогичином 1238 року?",
+    "a": [
+      "Добжинського ордену",
+      "Тевтонського ордену",
+      "Ордену госпітальєрів"
+    ],
+    "correct": 0,
+    "e": "У 1238 році Данило Романович розгромив війська Добжинського ордену під Дорогичином. Перемога посилила його позиції на західному напрямку. Добжинський орден був окремим військово-релігійним орденом, не тотожним Тевтонському."
+  },
+  {
+    "c": "Монгольська навала",
+    "t": "Падіння Києва",
+    "q": "У якому році монгольські війська захопили Київ під час походу Батия?",
+    "a": [
+      "1240 року",
+      "1238 року",
+      "1253 року"
+    ],
+    "correct": 0,
+    "e": "У грудні 1240 року монгольські війська захопили й зруйнували Київ. Навала завдала величезних втрат руським землям і змусила Данила Романовича шукати способи зберегти політичну самостійність своєї держави."
+  },
+  {
+    "c": "Монгольська навала",
+    "t": "Поїздка до Батия",
+    "q": "До кого Данило Романович вирушив у 1245–1246 роках, щоб підтвердити свої права на князювання?",
+    "a": [
+      "До хана Батия",
+      "До імператора Фрідріха II",
+      "До папи Інокентія IV"
+    ],
+    "correct": 0,
+    "e": "Данило вирушив до ставки Батия й визнав залежність від Золотої Орди. Це був вимушений політичний крок: князь прагнув зберегти владу та уникнути руйнівного походу монголів на його землі."
+  },
+  {
+    "c": "Монгольська навала",
+    "t": "Залежність від Орди",
+    "q": "Яким був головний політичний наслідок поїздки Данила Романовича до Батия?",
+    "a": [
+      "Визнання залежності від Орди",
+      "Перехід держави під владу Угорщини",
+      "Припинення князівської влади"
+    ],
+    "correct": 0,
+    "e": "Данило визнав зверхність золотоординського хана, але зберіг князівську владу у своїй державі. Надалі він намагався послабити залежність від Орди, шукаючи союзників у Центральній та Західній Європі."
+  },
+  {
+    "c": "Дипломатія та корона",
+    "t": "Коронація Данила",
+    "q": "У якому році Данило Романович прийняв королівську корону?",
+    "a": [
+      "1253 року",
+      "1238 року",
+      "1264 року"
+    ],
+    "correct": 0,
+    "e": "Коронація Данила Романовича відбулася 1253 року. У джерелах і сучасній історіографії його називають королем Русі. Корона підкреслювала міжнародне визнання правителя та його прагнення зміцнити позиції держави."
+  },
+  {
+    "c": "Дипломатія та корона",
+    "t": "Західна дипломатія",
+    "q": "На яку підтримку сподівався Данило Романович, погоджуючись на коронацію за участю представника папи римського?",
+    "a": [
+      "На допомогу західних правителів у боротьбі з монголами",
+      "На військову допомогу Візантії проти хрестоносців",
+      "На передачу йому престолу Священної Римської імперії"
+    ],
+    "correct": 0,
+    "e": "Данило шукав союзників для протидії монгольській зверхності й сподівався організувати ширшу коаліцію західноєвропейських правителів. Однак очікувана масштабна військова допомога так і не була надана."
+  },
+  {
+    "c": "Дипломатія та корона",
+    "t": "Королівський титул",
+    "q": "Як називали Данила Романовича після коронації 1253 року?",
+    "a": [
+      "Королем Русі",
+      "Королем Польщі",
+      "Імператором Візантії"
+    ],
+    "correct": 0,
+    "e": "Після коронації Данило отримав королівський титул, який у джерелах передають як «король Русі». Водночас у Галицько-Волинському літописі його продовжували називати і князем: обидва титули вживалися залежно від автора й контексту."
+  },
+  {
+    "c": "Міста та центри",
+    "t": "Місто Холм",
+    "q": "Заснування якого міста пов’язують із діяльністю Данила Романовича?",
+    "a": [
+      "Холма",
+      "Кракова",
+      "Перемишля"
+    ],
+    "correct": 0,
+    "e": "Данило Романович розбудував Холм і зробив його одним із важливих центрів своєї держави. Місто мало вигідне стратегічне розташування та стало осередком князівської влади й церковного життя."
+  },
+  {
+    "c": "Міста та центри",
+    "t": "Походження назви Львова",
+    "q": "На честь кого, за традиційним поясненням, назвали місто Львів?",
+    "a": [
+      "На честь князя Лева, сина Данила",
+      "На честь князя Любарта",
+      "На честь короля Лева Угорського"
+    ],
+    "correct": 0,
+    "e": "Назву Львова традиційно пов’язують із князем Левом Даниловичем, сином Данила Романовича. У середині XIII століття місто стало важливим осередком на західних землях держави."
+  },
+  {
+    "c": "Міста та центри",
+    "t": "Князь Лев Данилович",
+    "q": "З діяльністю якого правителя пов’язують перетворення Львова на один із головних політичних центрів держави?",
+    "a": [
+      "Лева Даниловича",
+      "Василька Романовича",
+      "Романа Мстиславича"
+    ],
+    "correct": 0,
+    "e": "Лев Данилович, син Данила Романовича, відігравав провідну роль у політиці держави наприкінці XIII століття. За його правління Львів посилив значення як князівський і торговельний центр."
+  },
+  {
+    "c": "Культура та господарство",
+    "t": "Літописна спадщина",
+    "q": "Яке писемне джерело є одним із найважливіших для вивчення історії Галицько-Волинської держави?",
+    "a": [
+      "Галицько-Волинський літопис",
+      "«Повість минулих літ» у повному обсязі",
+      "«Слово о полку Ігоревім»"
+    ],
+    "correct": 0,
+    "e": "Галицько-Волинський літопис — головне наративне джерело з історії держави XIII століття. Він розповідає про князів, війни, дипломатію та суспільне життя. Літопис зберігся у складі Іпатіївського літописного зводу."
+  },
+  {
+    "c": "Культура та господарство",
+    "t": "Галицька митрополія",
+    "q": "Яка важлива церковна установа була створена 1303 року за правління Юрія I Львовича?",
+    "a": [
+      "Галицька православна митрополія",
+      "Київський католицький архієпископат",
+      "Львівський патріархат"
+    ],
+    "correct": 0,
+    "e": "У 1303 році було засновано Галицьку православну митрополію з дозволу Константинопольського патріарха. Це посилило церковну організацію на західноукраїнських землях і стало важливим проявом політичного та культурного значення держави."
+  },
+  {
+    "c": "Культура та господарство",
+    "t": "Господарство Галичини",
+    "q": "Який природний ресурс був важливим джерелом прибутків і предметом торгівлі в Галичині?",
+    "a": [
+      "Сіль",
+      "Золото",
+      "Олово"
+    ],
+    "correct": 0,
+    "e": "Соляні промисли були важливою складовою господарства Галичини. Сіль добували, зокрема, в районі Дрогобича та інших осередках Передкарпаття. Її транспортували й продавали на значних відстанях."
+  },
+  {
+    "c": "Завершення доби",
+    "t": "Кінець династії Романовичів",
+    "q": "Яка подія 1340 року спричинила боротьбу сусідніх держав за землі колишньої Галицько-Волинської держави?",
+    "a": [
+      "Смерть князя Юрія II Болеслава",
+      "Коронація Данила Романовича",
+      "Утворення Галицької митрополії"
+    ],
+    "correct": 0,
+    "e": "У 1340 році помер князь Юрій II Болеслав. Після його смерті загострилася боротьба за спадщину Галицько-Волинської держави за участю Польщі, Угорщини та Литви. Цей рік традиційно вважають завершенням існування держави як єдиного політичного утворення."
+  }
+];
+let order=[], position=0, points=0, mistakes=[], answered=false, currentAnswers=[];
+
+function showScreen(id){
+ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function startGame(onlyMistakes){
+ order=onlyMistakes?[...new Set(mistakes)]:cards.map((_,i)=>i);
+ mistakes=[];
+ position=0;points=0;answered=false;
+ if(!order.length){alert("Помилок немає! Чудова робота.");return;}
+ showScreen("game");renderCard();
+}
+function renderCard(){
+ answered=false;
+ const card=cards[order[position]];
+ document.getElementById("counter").textContent=`Картка ${position+1} із ${order.length}`;
+ document.getElementById("score").textContent=`Правильно: ${points}`;
+ document.getElementById("bar").style.width=`${position/order.length*100}%`;
+ document.getElementById("category").textContent=card.c;
+ document.getElementById("title").textContent=card.t;
+ document.getElementById("question").textContent=card.q;
+ const photo=document.getElementById("cardPhoto"), credit=document.getElementById("photoCredit");
+ if(card.img){photo.onerror=()=>{photo.style.display="none";credit.innerHTML="";const fallback=document.createElement("a");fallback.href=card.source;fallback.target="_blank";fallback.rel="noopener";fallback.textContent="Фото недоступне — відкрити першоджерело";credit.appendChild(fallback);credit.style.display="block";};photo.onload=()=>{photo.style.display="block";};photo.alt="Фотографія пам’ятки: "+card.t;photo.loading="eager";photo.decoding="async";photo.style.display="block";photo.src=card.img;credit.innerHTML="";const link=document.createElement("a");link.href=card.source;link.target="_blank";link.rel="noopener";link.textContent=card.credit;credit.appendChild(link);credit.style.display="block";}
+ else{photo.removeAttribute("src");photo.style.display="none";credit.innerHTML="";if(card.source){const link=document.createElement("a");link.href=card.source;link.target="_blank";link.rel="noopener";link.textContent="Наукове джерело до картки";credit.appendChild(link);credit.style.display="block";}else{credit.style.display="none";}}
+ document.getElementById("flipCard").classList.remove("flipped");
+ document.getElementById("answerText").textContent="";
+ document.getElementById("flipHint").textContent="Обери відповідь — картка перевернеться й відкриє пояснення";
+ document.getElementById("next").disabled=true;
+ document.getElementById("next").textContent=position===order.length-1?"Побачити результат →":"Наступна картка →";
+ const box=document.getElementById("options");box.innerHTML="";
+ currentAnswers=card.a.map((answer,i)=>({answer,originalIndex:i}));
+ for(let i=currentAnswers.length-1;i>0;i--){
+  const j=Math.floor(Math.random()*(i+1));
+  [currentAnswers[i],currentAnswers[j]]=[currentAnswers[j],currentAnswers[i]];
+ }
+ currentAnswers.forEach((item,i)=>{
+  const b=document.createElement("button");
+  b.className="option";b.textContent=item.answer;
+  b.onclick=()=>choose(i);
+  box.appendChild(b);
+ });
+}
+function choose(index){
+ if(answered)return;
+ answered=true;
+ const card=cards[order[position]];
+ const correctIndex=currentAnswers.findIndex(item=>item.originalIndex===card.correct);
+ const buttons=[...document.querySelectorAll(".option")];
+ buttons.forEach((b,i)=>{
+  b.disabled=true;
+  if(i===correctIndex)b.classList.add("correct");
+  if(i===index&&i!==correctIndex)b.classList.add("wrong");
+ });
+ const good=index===correctIndex;
+ if(good)points++;
+ else mistakes.push(order[position]);
+ document.getElementById("answerLabel").textContent=good?"Правильно!":"Правильна відповідь: "+card.a[card.correct];
+ document.getElementById("answerText").textContent=card.e;
+ document.getElementById("flipCard").classList.add("flipped");
+ document.getElementById("flipHint").textContent="Відповідь відкрита — прочитай пояснення";
+ document.getElementById("score").textContent=`Правильно: ${points}`;
+ document.getElementById("next").disabled=false;
+}
+function nextCard(){
+ if(!answered)return;
+ position++;
+ if(position>=order.length){finish();return;}
+ renderCard();
+}
+function finish(){
+ showScreen("result");
+ const total=order.length;
+ document.getElementById("finalScore").textContent=`${points}/${total}`;
+ const percent=Math.round(points/total*100);
+ document.getElementById("resultText").textContent=
+  percent===100?"Чудово! Ти бездоганно впорався із завданням.":
+  percent>=70?"Гарний результат! Повтори складніші питання й рухайся далі.":
+  percent>=40?"Непогано! Повторення допоможе краще зрозуміти історію держави.":
+  "Це чудова нагода познайомитися з пам’ятками ще раз.";
+ document.getElementById("mistakesButton").style.display=mistakes.length?"block":"none";
+}
+document.getElementById("startGameButton")?.addEventListener("click", () => startGame(false));
+window.startGame = startGame;
+if(window.Telegram?.WebApp){
+ window.Telegram.WebApp.ready();
+ window.Telegram.WebApp.expand();
+}
+</script>
+</body>
+</html>
