@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#203b35">
+<title>Пам’ятки Русі — інтерактивні картки</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root {
+  --green:#284c40;
+  --gold:#bd9657;
+  --paper:#f5f0e5;
+  --ink:#24332e;
+  --muted:#758078;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:Georgia,"Times New Roman",serif;
+}
+main{max-width:760px;margin:auto;padding:25px 20px 45px}
+header{text-align:center;padding:20px 0 25px}
+.eyebrow{font:600 11px system-ui;letter-spacing:3px;color:var(--gold);text-transform:uppercase}
+h1{font-size:clamp(38px,9vw,58px);line-height:1;margin:18px 0 12px}
+.subtitle{font:15px/1.5 system-ui;color:var(--muted)}
+.panel{background:#fffdf8;border:1px solid #e5ddce;border-radius:22px;padding:22px}
+.topline{display:flex;justify-content:space-between;gap:10px;align-items:center;font:13px system-ui;color:var(--muted)}
+.progress{height:7px;background:#e9e3d7;border-radius:10px;margin:16px 0 22px;overflow:hidden}
+.progress div{height:100%;width:0;background:var(--gold);transition:width .3s}
+.category{font:700 11px system-ui;letter-spacing:1.5px;text-transform:uppercase;color:#8b7045}
+h2{font-size:27px;line-height:1.15;margin:12px 0}
+.question{font:16px/1.5 system-ui;color:#53615b;margin:12px 0 20px}
+.options{display:grid;gap:10px}
+.option{
+ width:100%;text-align:left;padding:14px 15px;border:1px solid #ded8cb;
+ border-radius:13px;background:white;color:var(--ink);
+ font:15px/1.4 system-ui;cursor:pointer;
+}
+.option:disabled{cursor:default;opacity:1}
+.option.correct{background:#e3eee5;border-color:#50816a}
+.option.wrong{background:#f8e7e2;border-color:#bd6a55}
+.feedback{display:none;margin-top:18px;padding:16px;border-radius:14px;background:#f0ede4;font:14px/1.55 system-ui}
+.feedback.show{display:block}
+.actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+button.primary,button.secondary{
+ border:0;border-radius:13px;padding:14px 18px;font:600 14px system-ui;cursor:pointer
+}
+button.primary{background:var(--green);color:white;flex:1}
+button.secondary{background:#e9e3d7;color:var(--ink)}
+button:disabled{opacity:.45;cursor:default}
+.stats{display:flex;justify-content:space-between;gap:8px;margin:18px 0;font:12px system-ui;color:var(--muted)}
+.stat strong{display:block;font-size:21px;color:var(--green)}
+.screen{display:none}
+.screen.active{display:block}
+.result{text-align:center;padding:25px 10px}
+.result .score{font-size:65px;color:var(--green);margin:12px}
+.result p{font:15px/1.6 system-ui;color:var(--muted)}
+footer{text-align:center;margin-top:25px;font:12px system-ui;color:var(--muted)}
+@media(max-width:420px){main{padding:15px 13px 35px}.panel{padding:17px}h2{font-size:24px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+ <div class="eyebrow">Історична інтерактивна колекція</div>
+ <h1>Пам’ятки<br>Русі</h1>
+ <div class="subtitle">Досліджуй культуру, мистецтво та спадщину середньовіччя</div>
+</header>
+
+<section id="intro" class="screen active panel">
+ <div class="category">Навчальна гра</div>
+ <h2>Відкрий спадщину Русі</h2>
+ <p class="question">На тебе чекають 20 запитань про архітектуру, мозаїки, книжкову культуру, ювелірне та декоративно-ужиткове мистецтво.</p>
+ <div class="stats">
+  <div class="stat"><strong>20</strong>карток</div>
+  <div class="stat"><strong>5</strong>розділів</div>
+  <div class="stat"><strong>∞</strong>можливість повторити</div>
+ </div>
+ <button class="primary" onclick="startGame(false)">Розпочати дослідження</button>
+ <footer>Обирай відповідь, читай пояснення та перевіряй свої знання.</footer>
+</section>
+
+<section id="game" class="screen panel">
+ <div class="topline">
+  <span id="counter">Картка 1 із 20</span>
+  <span id="score">Правильно: 0</span>
+ </div>
+ <div class="progress"><div id="bar"></div></div>
+ <div class="category" id="category"></div>
+ <h2 id="title"></h2>
+ <div class="question" id="question"></div>
+ <div class="options" id="options"></div>
+ <div class="feedback" id="feedback"></div>
+ <div class="actions">
+  <button class="primary" id="next" disabled onclick="nextCard()">Наступна картка →</button>
+ </div>
+</section>
+
+<section id="result" class="screen panel result">
+ <div class="category">Дослідження завершено</div>
+ <h2>Твій результат</h2>
+ <div class="score" id="finalScore">0/20</div>
+ <p id="resultText"></p>
+ <button class="primary" onclick="startGame(false)">Пройти ще раз</button>
+ <button class="secondary" id="mistakesButton" onclick="startGame(true)" style="margin-top:12px;width:100%">Повторити помилки</button>
+</section>
+
+<footer>Навчальний проєкт «Пам’ятки культури та мистецтва Русі»</footer>
+</main>
+
+<script>
+const cards = [
+{c:"Архітектура",t:"Софійський собор у Києві",q:"За правління якого князя було споруджено Софійський собор у Києві?",a:["Ярослава Мудрого","Володимира Великого","Святослава Ігоровича"],correct:0,e:"Софійський собор постав у першій половині XI століття, за князювання Ярослава Мудрого. Він став визначною пам’яткою архітектури та монументального мистецтва Русі."},
+{c:"Архітектура",t:"Золоті ворота",q:"Яку функцію виконували Золоті ворота стародавнього Києва?",a:["Оборонну та в’їзну","Лише торговельну","Були князівською усипальницею"],correct:0,e:"Золоті ворота були головною урочистою брамою укріпленого Києва та частиною його оборонної системи. Їх спорудження пов’язують із добою Ярослава Мудрого."},
+{c:"Архітектура",t:"Михайлівський Видубицький монастир",q:"На якому березі Дніпра розташований Видубицький монастир?",a:["На правому","На лівому","На острові посеред Дніпра"],correct:0,e:"Видубицький монастир розташований на правому березі Дніпра в Києві. Його історія сягає XI століття."},
+{c:"Архітектура",t:"Спасо-Преображенський собор",q:"У якому місті розташований Спасо-Преображенський собор — одна з найдавніших збережених споруд Русі?",a:["Чернігові","Переяславі","Володимирі"],correct:0,e:"Спасо-Преображенський собор у Чернігові закладено в XI столітті за князя Мстислава Володимировича. Це видатна пам’ятка давньоруської архітектури."},
+{c:"Архітектура",t:"Успенський собор Києво-Печерського монастиря",q:"У якому столітті було споруджено первісний Успенський собор Києво-Печерського монастиря?",a:["XI столітті","IX столітті","XIV столітті"],correct:0,e:"Первісний Успенський собор Києво-Печерського монастиря спорудили у другій половині XI століття. Він став важливим духовним і культурним центром."},
+{c:"Мозаїки та фрески",t:"Богородиця Оранта",q:"Як називається тип зображення Богородиці з піднятими в молитві руками?",a:["Оранта","Одигітрія","Елеуса"],correct:0,e:"Оранта — іконографічний тип, у якому Богородицю зображують із піднятими руками в молитовному жесті. Знаменита мозаїка Оранти збереглася в Софійському соборі Києва."},
+{c:"Мозаїки та фрески",t:"Христос Пантократор",q:"Що означає назва «Пантократор» у християнському мистецтві?",a:["Вседержитель","Учитель апостолів","Цар земний"],correct:0,e:"Пантократор — образ Христа як Вседержителя, володаря світу. Такі зображення часто розміщували в центральній частині храмових куполів."},
+{c:"Мозаїки та фрески",t:"Фрески Софійського собору",q:"Що таке фреска?",a:["Живопис на вологій штукатурці","Мозаїка зі скла","Різьблення по каменю"],correct:0,e:"Фреска — техніка настінного живопису водяними фарбами по свіжій, вологій штукатурці. У Софійському соборі збереглися численні фрескові композиції."},
+{c:"Мозаїки та фрески",t:"Кирилівська церква",q:"Який вид монументального мистецтва зберігся в інтер’єрі Кирилівської церкви Києва?",a:["Фресковий живопис","Мозаїка з бурштину","Вітражі"],correct:0,e:"Кирилівська церква — пам’ятка XII століття, відома цінними фресками. Частину розписів пізніше поновлювали, зокрема за участю Михайла Врубеля."},
+{c:"Книжкова культура",t:"Остромирове Євангеліє",q:"Для якого міста було створено Остромирове Євангеліє?",a:["Новгорода","Києва","Чернігова"],correct:0,e:"Остромирове Євангеліє створене в 1056–1057 роках для новгородського посадника Остромира. Це одна з найдавніших точно датованих східнослов’янських рукописних книг."},
+{c:"Книжкова культура",t:"Ізборник Святослава",q:"Якого року датовано Ізборник Святослава?",a:["1073","988","1113"],correct:0,e:"Ізборник Святослава 1073 року — рукописна збірка релігійних і світських текстів, створена для князя Святослава Ярославича."},
+{c:"Книжкова культура",t:"Мстиславове Євангеліє",q:"До якого виду книжкових пам’яток належить Мстиславове Євангеліє?",a:["Рукописне богослужбове Євангеліє","Літопис","Збірка законів"],correct:0,e:"Мстиславове Євангеліє — багато оздоблений рукописний кодекс початку XII століття, пов’язаний із князем Мстиславом Володимировичем."},
+{c:"Книжкова культура",t:"Києво-Печерський патерик",q:"Про що розповідає Києво-Печерський патерик?",a:["Про життя ченців і подвижників монастиря","Про походи князів на Балкани","Про торгівлю на Русі"],correct:0,e:"Києво-Печерський патерик — збірка оповідей про життя ченців, заснування та духовні традиції Києво-Печерського монастиря. Формувався протягом XIII століття."},
+{c:"Ювелірне мистецтво",t:"Колти",q:"Що таке колти в давньоруському жіночому вбранні?",a:["Порожнисті підвіски біля скронь","Поясні пряжки","Браслети на зап’ястя"],correct:0,e:"Колти — парні порожнисті прикраси, які підвішували біля скронь до головного убору. Їх виготовляли з дорогоцінних металів і прикрашали складними орнаментами."},
+{c:"Ювелірне мистецтво",t:"Перегородчаста емаль",q:"У чому полягає техніка перегородчастої емалі?",a:["Комірки з металевих перегородок заповнюють емаллю","Метал прикрашають лише гравіюванням","Прикрасу обклеюють тканиною"],correct:0,e:"У техніці перегородчастої емалі на металеву основу напаюють тонкі перегородки, утворюючи комірки, які заповнюють кольоровою склоподібною емаллю."},
+{c:"Ювелірне мистецтво",t:"Скроневі кільця",q:"Де носили скроневі кільця?",a:["Біля скронь, у головному уборі або зачісці","На пальцях","На шиї"],correct:0,e:"Скроневі кільця — характерні жіночі прикраси середньовічних слов’ян. Їх підвішували біля скронь, закріплюючи на головному уборі або в зачісці."},
+{c:"Ювелірне мистецтво",t:"Зернь і скань",q:"Що називають зерню в ювелірному мистецтві?",a:["Декорування дрібними металевими кульками","Нанесення кольорового лаку","Обробку дерева різцем"],correct:0,e:"Зернь — техніка прикрашання виробів маленькими металевими кульками. Скань, або філігрань, — візерунок із тонкого металевого дроту."},
+{c:"Декоративно-ужиткове мистецтво",t:"Скляні браслети",q:"З якого матеріалу виготовляли поширені в містах Русі браслети?",a:["Кольорового скла","Лише дерева","Глини без випалу"],correct:0,e:"У містах Русі археологи знаходять численні фрагменти та цілі скляні браслети різних кольорів. Вони свідчать про розвиток ремісничого виробництва та торгівлі."},
+{c:"Декоративно-ужиткове мистецтво",t:"Полив’яна кераміка",q:"Для чого використовували поливу на керамічних виробах?",a:["Для створення захисного й декоративного склоподібного покриття","Для склеювання уламків","Для надання виробу м’якості"],correct:0,e:"Полива — склоподібне покриття, яке наносили на кераміку та закріплювали випалом. Воно робило поверхню менш проникною для вологи й надавало їй кольору та блиску."},
+{c:"Декоративно-ужиткове мистецтво",t:"Різьблені шиферні плити",q:"Який матеріал використовували для виготовлення багатьох різьблених архітектурних деталей Русі?",a:["Шифер (плитчастий камінь)","Папірус","Бавовна"],correct:0,e:"Шиферні плити використовували в архітектурі та для декоративного оздоблення храмів. На них вирізьблювали орнаменти, рослинні мотиви та складні композиції."}
+];
+
+let order=[], position=0, points=0, mistakes=[], answered=false;
+
+function showScreen(id){
+ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function startGame(onlyMistakes){
+ order=onlyMistakes?[...mistakes]:cards.map((_,i)=>i);
+ if(!onlyMistakes)mistakes=[];
+ position=0;points=0;answered=false;
+ if(!order.length){alert("Помилок немає! Чудова робота.");return;}
+ showScreen("game");renderCard();
+}
+function renderCard(){
+ answered=false;
+ const card=cards[order[position]];
+ document.getElementById("counter").textContent=`Картка ${position+1} із ${order.length}`;
+ document.getElementById("score").textContent=`Правильно: ${points}`;
+ document.getElementById("bar").style.width=`${position/order.length*100}%`;
+ document.getElementById("category").textContent=card.c;
+ document.getElementById("title").textContent=card.t;
+ document.getElementById("question").textContent=card.q;
+ document.getElementById("feedback").className="feedback";
+ document.getElementById("feedback").textContent="";
+ document.getElementById("next").disabled=true;
+ document.getElementById("next").textContent=position===order.length-1?"Побачити результат →":"Наступна картка →";
+ const box=document.getElementById("options");box.innerHTML="";
+ card.a.forEach((answer,i)=>{
+  const b=document.createElement("button");
+  b.className="option";b.textContent=answer;
+  b.onclick=()=>choose(i);
+  box.appendChild(b);
+ });
+}
+function choose(index){
+ if(answered)return;
+ answered=true;
+ const card=cards[order[position]];
+ const buttons=[...document.querySelectorAll(".option")];
+ buttons.forEach((b,i)=>{
+  b.disabled=true;
+  if(i===card.correct)b.classList.add("correct");
+  if(i===index&&i!==card.correct)b.classList.add("wrong");
+ });
+ const good=index===card.correct;
+ if(good)points++;
+ else mistakes.push(order[position]);
+ const feedback=document.getElementById("feedback");
+ feedback.innerHTML=`<strong>${good?"Правильно!":"Це не зовсім так."}</strong><br>${card.e}`;
+ feedback.classList.add("show");
+ document.getElementById("score").textContent=`Правильно: ${points}`;
+ document.getElementById("next").disabled=false;
+}
+function nextCard(){
+ if(!answered)return;
+ position++;
+ if(position>=order.length){finish();return;}
+ renderCard();
+}
+function finish(){
+ showScreen("result");
+ const total=order.length;
+ document.getElementById("finalScore").textContent=`${points}/${total}`;
+ const percent=Math.round(points/total*100);
+ document.getElementById("resultText").textContent=
+  percent===100?"Чудово! Ти бездоганно впорався із завданням.":
+  percent>=70?"Гарний результат! Повтори складніші теми й рухайся далі.":
+  percent>=40?"Непогано! Повторення допоможе краще запам’ятати пам’ятки.":
+  "Це чудова нагода познайомитися з пам’ятками ще раз.";
+ document.getElementById("mistakesButton").style.display=mistakes.length?"block":"none";
+}
+if(window.Telegram?.WebApp){
+ window.Telegram.WebApp.ready();
+ window.Telegram.WebApp.expand();
+}
+</script>
+</body>
+</html>
