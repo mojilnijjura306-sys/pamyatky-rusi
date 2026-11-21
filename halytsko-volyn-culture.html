@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#203b35">
+<title>Культура Галицько-Волинської держави — підготовка до НМТ</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--green:#284c40;--gold:#bd9657;--paper:#f5f0e5;--ink:#24332e;--muted:#758078}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:Georgia,"Times New Roman",serif}
+main{max-width:760px;margin:auto;padding:25px 20px 45px}
+header{text-align:center;padding:20px 0 25px}
+.eyebrow{font:600 11px system-ui;letter-spacing:3px;color:var(--gold);text-transform:uppercase}
+h1{font-size:clamp(38px,9vw,58px);line-height:1;margin:18px 0 12px}
+.subtitle{font:15px/1.5 system-ui;color:var(--muted)}
+.panel{background:#fffdf8;border:1px solid #e5ddce;border-radius:22px;padding:22px}
+.topline{display:flex;justify-content:space-between;gap:10px;align-items:center;font:13px system-ui;color:var(--muted)}
+.progress{height:7px;background:#e9e3d7;border-radius:10px;margin:16px 0 22px;overflow:hidden}
+.progress div{height:100%;width:0;background:var(--gold);transition:width .3s}
+#category,#title{display:none}
+h2{font-size:27px;line-height:1.15;margin:12px 0}
+.question{font:16px/1.5 system-ui;color:#53615b;margin:12px 0 20px}
+.options{display:grid;gap:10px}
+.option{width:100%;text-align:left;padding:14px 15px;border:1px solid #ded8cb;border-radius:13px;background:white;color:var(--ink);font:15px/1.4 system-ui;cursor:pointer}
+.option:disabled{cursor:default;opacity:1}
+.option.correct{background:#e3eee5;border-color:#50816a}
+.option.wrong{background:#f8e7e2;border-color:#bd6a55}
+.flip-wrap{perspective:1000px;margin:10px 0 18px}
+.flip-card{position:relative;display:grid;grid-template-columns:minmax(0,1fr);transform-style:preserve-3d;transition:transform .65s cubic-bezier(.2,.7,.2,1)}
+.flip-card.flipped{transform:rotateY(180deg)}
+.flip-face{position:relative;grid-area:1/1;min-width:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;padding:18px;background:#f0ede4;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box}
+.card-photo{display:block;flex:0 0 auto;width:100%;max-height:245px;object-fit:contain;border-radius:12px;margin:0 0 12px;background:#e4dfd4}
+.photo-credit{display:none;font:10px/1.4 system-ui;color:var(--muted);margin:-5px 0 12px}
+.photo-credit a{color:inherit;text-decoration:underline}
+.flip-back{transform:rotateY(180deg);background:#e8eee6;border:1px solid #cbd9cc}
+.flip-back strong{font:700 11px system-ui;letter-spacing:1px;text-transform:uppercase;color:#54745e}
+.flip-back p{font:14px/1.55 system-ui;margin:10px 0 0}
+.flip-hint{font:12px system-ui;color:var(--muted);text-align:center;margin:0 0 12px}
+.actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+button.primary,button.secondary{border:0;border-radius:13px;padding:14px 18px;font:600 14px system-ui;cursor:pointer}
+button.primary{background:var(--green);color:white;flex:1}
+button.secondary{background:#e9e3d7;color:var(--ink)}
+button:disabled{opacity:.45;cursor:default}
+.stats{display:flex;justify-content:space-between;gap:8px;margin:18px 0;font:12px system-ui;color:var(--muted)}
+.stat strong{display:block;font-size:21px;color:var(--green)}
+.screen{display:none}.screen.active{display:block}
+.result{text-align:center;padding:25px 10px}
+.result .score{font-size:65px;color:var(--green);margin:12px}
+.result p{font:15px/1.6 system-ui;color:var(--muted)}
+footer{text-align:center;margin-top:25px;font:12px system-ui;color:var(--muted)}
+@media(max-width:420px){main{padding:15px 13px 35px}.panel{padding:17px}h2{font-size:24px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+ <div class="eyebrow">Історична інтерактивна колекція</div>
+ <h1>Мистецтво<br>і культура</h1>
+ <div class="subtitle">Галицько-Волинська держава · підготовка до НМТ</div>
+</header>
+<section id="intro" class="screen active panel">
+ <h2>Культура Галицько-Волинської держави</h2>
+ <p class="question">20 тренувальних запитань про архітектуру, іконопис, книжкову культуру та історичні пам’ятки. Особливу увагу приділено чотирьом пам’яткам, які потрібно впізнавати за зображенням.</p>
+ <div class="stats">
+  <div class="stat"><strong>20</strong>запитань</div>
+  <div class="stat"><strong>4</strong>візуальні пам’ятки</div>
+  <div class="stat"><strong>НМТ</strong>формат</div>
+ </div>
+ <button class="primary" id="startGameButton" type="button">Розпочати тестування</button>
+ <footer>Обирай одну відповідь із чотирьох, читай пояснення та повторюй помилки.</footer>
+</section>
+<section id="game" class="screen panel">
+ <div class="topline"><span id="counter">Запитання 1 із 20</span><span id="score">Правильно: 0</span></div>
+ <div class="progress"><div id="bar"></div></div>
+ <div class="flip-wrap"><div class="flip-card" id="flipCard">
+  <div class="flip-face">
+   <img class="card-photo" id="cardPhoto" alt="">
+   <div class="photo-credit" id="photoCredit"></div>
+   <div class="category" id="category"></div><h2 id="title"></h2>
+   <div class="question" id="question"></div>
+  </div>
+  <div class="flip-face flip-back"><strong id="answerLabel">Пояснення</strong><p id="answerText"></p></div>
+ </div></div>
+ <div class="flip-hint" id="flipHint">Обери відповідь — картка перевернеться й відкриє пояснення</div>
+ <div class="options" id="options"></div>
+ <div class="actions"><button class="primary" id="next" disabled type="button">Наступне запитання →</button></div>
+</section>
+<section id="result" class="screen panel result">
+ <div class="category">Тестування завершено</div><h2>Твій результат</h2>
+ <div class="score" id="finalScore">0/20</div><p id="resultText"></p>
+ <button class="primary" id="again" type="button">Пройти ще раз</button>
+ <button class="secondary" id="mistakesButton" type="button" style="margin-top:12px;width:100%">Повторити помилки</button>
+</section>
+<footer>Навчальний проєкт для підготовки до НМТ з історії України</footer>
+</main>
+<script>
+const cards = [
+{q:"Яка пам’ятка зображена на фото?",a:["Успенський собор у Володимирі","Успенський собор у Галичі","Церква святого Пантелеймона","Софійський собор у Києві"],correct:0,e:"Це Успенський собор у Володимирі (нині Володимир, Волинська область), збудований за князя Мстислава Ізяславича й освячений 1160 року. Для НМТ важливо впізнати пам’ятку, пов’язати її з Волинню та добою Галицько-Волинської держави. Дату спорудження не варто плутати з головним завданням — візуальною ідентифікацією.",img:"https://commons.wikimedia.org/wiki/Special:FilePath/Успенський%20собор,%20Володимир-Волинський.jpg?width=1100",credit:"Успенський собор у Володимирі · Wikimedia Commons",source:"https://commons.wikimedia.org/wiki/File:Успенський_собор,_Володимир-Волинський.jpg"},
+{q:"Яка пам’ятка зображена на фото?",a:["Церква святого Пантелеймона поблизу Галича","Успенський собор у Володимирі","Церква Іоанна Златоуста в Холмі","Білокам’яна ротонда в Перемишлі"],correct:0,e:"Церква святого Пантелеймона розташована в селі Шевченкове поблизу Галича. Це визначна пам’ятка галицької архітектури кінця XII століття. Її впізнають за білокам’яною кладкою, романськими рисами та різьбленим порталом. Не плутай її з волинським Успенським собором.",img:"https://commons.wikimedia.org/wiki/Special:FilePath/Saint%20Panteleimon%20Church,%20Shevchenkove,%20Ukraine-6317.jpg?width=1100",credit:"Церква святого Пантелеймона · фото Raimond Spekking · Wikimedia Commons",source:"https://commons.wikimedia.org/wiki/File:Saint_Panteleimon_Church,_Shevchenkove,_Ukraine-6317.jpg"},
+{q:"Яка пам’ятка зображена на фото?",a:["Холмська ікона Богородиці","Дорогобузька ікона Богородиці","Вишгородська ікона Богородиці","Волинська ікона Богородиці з Луцька"],correct:0,e:"Це Холмська ікона Богородиці — пам’ятка візантійської традиції, пов’язана з Холмом і культурним середовищем Данила Романовича. Ікону традиційно датують XI–XII століттями; точні обставини її появи в Холмі та окремі етапи історії обговорюються дослідниками. Для НМТ насамперед запам’ятай назву й упізнавання зображення.",img:"https://commons.wikimedia.org/wiki/Special:FilePath/Холмська%20ікона%20Богородиці%20Одигітрії.jpg?width=900",credit:"Холмська ікона Богородиці · Wikimedia Commons",source:"https://commons.wikimedia.org/wiki/File:Холмська_ікона_Богородиці_Одигітрії.jpg"},
+{q:"Яка пам’ятка зображена на фото?",a:["Дорогобузька ікона Богородиці Одигітрії","Холмська ікона Богородиці","Вишгородська ікона Богородиці","Ікона Богородиці з Підгородців"],correct:0,e:"Це Дорогобузька ікона Богородиці Одигітрії — видатна пам’ятка волинського іконопису XIII століття, що походить із церкви в Дорогобужі на Волині. Нині зберігається в Рівненському обласному краєзнавчому музеї. Музейний опис визначає матеріал як дерево й темперу.",img:"https://commons.wikimedia.org/wiki/Special:FilePath/Дорогобузька%20ікона%20Богородиці%20Одигітрії.jpg?width=900",credit:"Дорогобузька ікона Богородиці · Wikimedia Commons",source:"https://museum.mincult.gov.ua/collections/bohorodytsya-odyhitriya-z-dorohobuzha"},
+{q:"Яке поєднання культурних традицій найточніше характеризує мистецтво Галицько-Волинської держави?",a:["Візантійсько-руської та західноєвропейської","Скандинавської та арабської","Античної грецької та єгипетської","Османської та перської"],correct:0,e:"Культура Королівства Руського продовжувала руські та візантійські традиції, водночас активно взаємодіючи із Центральною та Західною Європою. Особливо помітним західноєвропейський вплив був в архітектурі Галича: романські форми поєднувалися з візантійсько-руською храмовою традицією."},
+{q:"Який будівельний матеріал особливо характерний для храмового будівництва Галича княжої доби?",a:["Тесаний білий камінь","Саман і дерев’яний каркас","Червона випалена цегла як єдиний матеріал","Мармурові блоки з Італії"],correct:0,e:"Для галицької архітектури характерне використання тесаного білого каменю. Це добре помітно на церкві святого Пантелеймона поблизу Галича. На Волині в храмовому будівництві ширше використовували цеглу та плінфу; важливо розрізняти регіональні особливості."},
+{q:"Яка архітектурна риса церкви святого Пантелеймона свідчить про західноєвропейський вплив?",a:["Романський портал із різьбленими деталями","Високий готичний шпиль","Барокові волюти на фасаді","Класичний портик із колонами"],correct:0,e:"Романські риси церкви святого Пантелеймона виявляються, зокрема, у порталі з колонками та різьбленими капітелями. Готика, бароко й класицизм належать до інших історичних періодів і не є визначальними стилями цієї пам’ятки."},
+{q:"З яким князем пов’язують спорудження Успенського собору у Володимирі?",a:["Мстиславом Ізяславичем","Данилом Романовичем","Романом Мстиславичем","Володимиром Васильковичем"],correct:0,e:"Успенський собор у Володимирі споруджено за князя Мстислава Ізяславича й освячено 1160 року. Це одна з найважливіших пам’яток волинської архітектури. Для візуального завдання НМТ важливо співвіднести храм із містом Володимиром і Волинню."},
+{q:"Яка споруда була головним храмом княжого Галича?",a:["Успенський собор","Софійський собор","Михайлівський Золотоверхий собор","Десятинна церква"],correct:0,e:"Успенський собор у Галичі був головним храмом княжого міста й важливим осередком церковного та політичного життя. Не плутай його з Успенським собором у Володимирі — це різні пам’ятки, розташовані в різних історичних центрах."},
+{q:"Який тип архітектури поєднувався з візантійсько-руськими традиціями в Галичині?",a:["Романський","Ренесансний","Бароковий","Класицистичний"],correct:0,e:"У галицькій архітектурі XII–XIII століть помітні романські впливи, що проявлялися в оздобленні порталів, кам’яному різьбленні та окремих конструктивних рішеннях. Візантійсько-руська традиція залишалася основою храмового будівництва."},
+{q:"Яку функцію виконували кам’яні оборонні вежі, що споруджувалися на Волині у XIII столітті?",a:["Оборонну та спостережну","Виключно дзвіницьку","Лише торговельну","Виключно житлову для ремісників"],correct:0,e:"Муровані оборонні вежі, або донжони, були важливими елементами фортифікацій. Вони забезпечували оборону, контроль підступів і могли бути останнім осередком опору під час облоги. Прикладом є Кам’янецька вежа та вежа в Стовпі."},
+{q:"Який вид образотворчого мистецтва був особливо важливим для оздоблення храмів?",a:["Фресковий живопис та іконопис","Олійний пейзажний живопис на полотні","Світська батальна гравюра","Портретна фотографія"],correct:0,e:"Інтер’єри храмів прикрашали фресками та іконами. Монументальний живопис часто виконувався за княжим або церковним замовленням. Іконопис продовжував візантійсько-руську традицію, але поступово набував місцевих рис."},
+{q:"Що означає назва іконографічного типу «Одигітрія»?",a:["Богородиця вказує на Немовля Христа як на шлях спасіння","Богородиця ніжно притуляється щокою до Немовляти","Богородиця зображена без Немовляти в молитві","Богородиця стоїть із піднятими обома руками"],correct:0,e:"Одигітрія означає «Провідниця». Богородиця тримає Дитя й жестом указує на Нього. Такий тип зображення пов’язують, зокрема, з Дорогобузькою іконою. Не плутай Одигітрію з Орантою, де Богородиця зображена з піднятими в молитві руками."},
+{q:"Яка пам’ятка є прикладом розвитку книжкової мініатюри в культурі Галицько-Волинської держави?",a:["Лавришівське Євангеліє","Остромирове Євангеліє","Ізборник Святослава","Реймське Євангеліє"],correct:0,e:"Лавришівське Євангеліє — рукописна пам’ятка, пов’язана з культурним середовищем Волині та традицією книжкової мініатюри. Його оздоблення свідчить про високий рівень переписування й художнього оформлення книг у регіоні."},
+{q:"Яка пам’ятка є головним писемним джерелом для вивчення історії Галицько-Волинської держави?",a:["Галицько-Волинський літопис","«Повість минулих літ»","«Слово о полку Ігоревім»","«Руська правда»"],correct:0,e:"Галицько-Волинський літопис — важливе джерело з історії держави XIII століття. Він містить оповіді про князів, війни, дипломатію, будівництво та церковне життя. У літописі особливо докладно висвітлено діяльність Данила Романовича й Володимира Васильковича."},
+{q:"Яка особливість вирізняє композицію Галицько-Волинського літопису?",a:["Він не має послідовного поділу на річні статті, як ранні літописні зводи","Він написаний виключно віршами","Він містить лише церковні молитви","Він є збірником законів без оповідей"],correct:0,e:"Галицько-Волинський літопис має складну композицію й не дотримується послідовної порічної структури, характерної для ранніх літописних зводів. Його стиль образний, емоційний, із розгорнутими характеристиками князів і подій."},
+{q:"Яке твердження найточніше характеризує роль князів у розвитку культури Галицько-Волинської держави?",a:["Князі були замовниками храмів, ікон та оздоблення княжих резиденцій","Князі забороняли будівництво кам’яних храмів","Культурний розвиток відбувався лише в монастирях без княжої підтримки","Князі підтримували тільки військове будівництво"],correct:0,e:"Князівське меценатство було важливим чинником культурного розвитку. Князі замовляли будівництво храмів, ікони та оздоблення резиденцій. Літописні оповіді про будівництво Холма за Данила Романовича свідчать про залучення майстрів і використання коштовного декору."},
+{q:"Який рукописний твір пов’язують із культурним середовищем Холма?",a:["Холмське Євангеліє","Остромирове Євангеліє","Пересопницьке Євангеліє","Апостол Івана Федорова"],correct:0,e:"Холмське Євангеліє належить до рукописної книжкової спадщини, пов’язаної з Холмом і княжим культурним середовищем. Для НМТ варто розрізняти пам’ятки книжкової культури Русі та пізніші українські друковані книги."},
+{q:"Яке твердження про культурний розвиток Галицько-Волинської держави є правильним?",a:["Він продовжував традиції Русі й водночас засвоював європейські впливи","Він повністю відмовився від візантійського спадку","Він розвивався ізольовано від сусідніх країн","Він розпочався лише після приєднання краю до Польщі"],correct:0,e:"Культура держави не була ізольованою: вона продовжувала русько-візантійські традиції та взаємодіяла з Центральною і Західною Європою. Це особливо помітно в архітектурі, оздобленні храмів, книжковій справі й церковному мистецтві."},
+{q:"Який висновок можна зробити з використання білого тесаного каменю та романського порталу в галицьких храмах?",a:["Галицька архітектура поєднувала місцеві традиції із західноєвропейськими впливами","Галицькі храми наслідували виключно дерев’яне будівництво","Ці споруди належать до доби українського бароко","Архітектура Галича не мала зв’язків із культурою сусідів"],correct:0,e:"Білокам’яне будівництво й романські деталі свідчать про контакти галицьких земель із Центральною та Західною Європою. Водночас планування храмів і релігійна традиція продовжували візантійсько-руську спадщину."}
+];
+let order=[],position=0,points=0,mistakes=[],answered=false,currentAnswers=[];
+function showScreen(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");window.scrollTo({top:0,behavior:"smooth"});}
+function startGame(onlyMistakes){order=onlyMistakes?[...new Set(mistakes)]:cards.map((_,i)=>i);mistakes=[];position=0;points=0;answered=false;if(!order.length){alert("Помилок немає! Чудова робота.");return;}showScreen("game");renderCard();}
+function renderCard(){
+ answered=false;const card=cards[order[position]];
+ document.getElementById("counter").textContent=`Запитання ${position+1} із ${order.length}`;
+ document.getElementById("score").textContent=`Правильно: ${points}`;
+ document.getElementById("bar").style.width=`${position/order.length*100}%`;
+ document.getElementById("question").textContent=card.q;
+ const photo=document.getElementById("cardPhoto"),credit=document.getElementById("photoCredit");
+ if(card.img){photo.onerror=()=>{photo.style.display="none";credit.innerHTML="";const a=document.createElement("a");a.href=card.source;a.target="_blank";a.rel="noopener";a.textContent="Зображення не завантажилося — відкрити джерело";credit.appendChild(a);credit.style.display="block";};photo.onload=()=>photo.style.display="block";photo.alt="Історична пам’ятка";photo.style.display="block";photo.src=card.img;credit.innerHTML="";const a=document.createElement("a");a.href=card.source;a.target="_blank";a.rel="noopener";a.textContent=card.credit;credit.appendChild(a);credit.style.display="block";}
+ else{photo.removeAttribute("src");photo.style.display="none";credit.innerHTML="";credit.style.display="none";}
+ document.getElementById("flipCard").classList.remove("flipped");document.getElementById("answerText").textContent="";
+ document.getElementById("flipHint").textContent="Обери відповідь — картка перевернеться й відкриє пояснення";
+ document.getElementById("next").disabled=true;document.getElementById("next").textContent=position===order.length-1?"Побачити результат →":"Наступне запитання →";
+ const box=document.getElementById("options");box.innerHTML="";
+ currentAnswers=card.a.map((answer,i)=>({answer,originalIndex:i}));
+ for(let i=currentAnswers.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[currentAnswers[i],currentAnswers[j]]=[currentAnswers[j],currentAnswers[i]];}
+ currentAnswers.forEach((item,i)=>{const b=document.createElement("button");b.className="option";b.textContent=item.answer;b.type="button";b.onclick=()=>choose(i);box.appendChild(b);});
+}
+function choose(index){if(answered)return;answered=true;const card=cards[order[position]];const correctIndex=currentAnswers.findIndex(item=>item.originalIndex===card.correct);const buttons=[...document.querySelectorAll(".option")];buttons.forEach((b,i)=>{b.disabled=true;if(i===correctIndex)b.classList.add("correct");if(i===index&&i!==correctIndex)b.classList.add("wrong");});const good=index===correctIndex;if(good)points++;else mistakes.push(order[position]);document.getElementById("answerLabel").textContent=good?"Правильно!":"Правильна відповідь: "+card.a[card.correct];document.getElementById("answerText").textContent=card.e;document.getElementById("flipCard").classList.add("flipped");document.getElementById("flipHint").textContent="Відповідь відкрита — прочитай пояснення";document.getElementById("score").textContent=`Правильно: ${points}`;document.getElementById("next").disabled=false;}
+function nextCard(){if(!answered)return;position++;if(position>=order.length){finish();return;}renderCard();}
+function finish(){showScreen("result");const total=order.length;document.getElementById("finalScore").textContent=`${points}/${total}`;const percent=Math.round(points/total*100);document.getElementById("resultText").textContent=percent===100?"Відмінно! Ти впевнено впізнаєш пам’ятки та розумієш культурні процеси.":percent>=80?"Дуже добрий результат. Повтори пояснення до помилок, щоб закріпити матеріал.":percent>=60?"Добра основа. Зверни особливу увагу на розпізнавання пам’яток за зображеннями й архітектурні ознаки.":"Використай результат як план повторення: почни з чотирьох візуальних пам’яток і ключових понять.";document.getElementById("mistakesButton").style.display=mistakes.length?"block":"none";}
+document.getElementById("startGameButton").addEventListener("click",()=>startGame(false));
+document.getElementById("next").addEventListener("click",nextCard);
+document.getElementById("again").addEventListener("click",()=>startGame(false));
+document.getElementById("mistakesButton").addEventListener("click",()=>startGame(true));
+if(window.Telegram?.WebApp){window.Telegram.WebApp.ready();window.Telegram.WebApp.expand();}
+</script>
+</body></html>
