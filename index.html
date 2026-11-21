@@ -41,8 +41,14 @@ h2{font-size:27px;line-height:1.15;margin:12px 0}
 .option:disabled{cursor:default;opacity:1}
 .option.correct{background:#e3eee5;border-color:#50816a}
 .option.wrong{background:#f8e7e2;border-color:#bd6a55}
-.feedback{display:none;margin-top:18px;padding:16px;border-radius:14px;background:#f0ede4;font:14px/1.55 system-ui}
-.feedback.show{display:block}
+.flip-wrap{perspective:1000px;margin:10px 0 18px}
+.flip-card{position:relative;min-height:190px;transform-style:preserve-3d;transition:transform .65s cubic-bezier(.2,.7,.2,1)}
+.flip-card.flipped{transform:rotateY(180deg)}
+.flip-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;padding:18px;background:#f0ede4;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box}
+.flip-back{transform:rotateY(180deg);background:#e8eee6;border:1px solid #cbd9cc}
+.flip-back strong{font:700 11px system-ui;letter-spacing:1px;text-transform:uppercase;color:#54745e}
+.flip-back p{font:14px/1.55 system-ui;margin:10px 0 0}
+.flip-hint{font:12px system-ui;color:var(--muted);text-align:center;margin:0 0 12px}
 .actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
 button.primary,button.secondary{
  border:0;border-radius:13px;padding:14px 18px;font:600 14px system-ui;cursor:pointer
@@ -88,11 +94,21 @@ footer{text-align:center;margin-top:25px;font:12px system-ui;color:var(--muted)}
   <span id="score">Правильно: 0</span>
  </div>
  <div class="progress"><div id="bar"></div></div>
- <div class="category" id="category"></div>
- <h2 id="title"></h2>
- <div class="question" id="question"></div>
+ <div class="flip-wrap">
+  <div class="flip-card" id="flipCard">
+   <div class="flip-face">
+    <div class="category" id="category"></div>
+    <h2 id="title"></h2>
+    <div class="question" id="question"></div>
+   </div>
+   <div class="flip-face flip-back">
+    <strong id="answerLabel">Історична довідка</strong>
+    <p id="answerText"></p>
+   </div>
+  </div>
+ </div>
+ <div class="flip-hint" id="flipHint">Обери відповідь — картка перевернеться й відкриє пояснення</div>
  <div class="options" id="options"></div>
- <div class="feedback" id="feedback"></div>
  <div class="actions">
   <button class="primary" id="next" disabled onclick="nextCard()">Наступна картка →</button>
  </div>
@@ -134,7 +150,7 @@ const cards = [
 {c:"Декоративно-ужиткове мистецтво",t:"Різьблені шиферні плити",q:"Який матеріал використовували для виготовлення багатьох різьблених архітектурних деталей Русі?",a:["Шифер (плитчастий камінь)","Папірус","Бавовна"],correct:0,e:"Шиферні плити використовували в архітектурі та для декоративного оздоблення храмів. На них вирізьблювали орнаменти, рослинні мотиви та складні композиції."}
 ];
 
-let order=[], position=0, points=0, mistakes=[], answered=false;
+let order=[], position=0, points=0, mistakes=[], answered=false, currentAnswers=[];
 
 function showScreen(id){
  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
@@ -142,8 +158,8 @@ function showScreen(id){
  window.scrollTo({top:0,behavior:"smooth"});
 }
 function startGame(onlyMistakes){
- order=onlyMistakes?[...mistakes]:cards.map((_,i)=>i);
- if(!onlyMistakes)mistakes=[];
+ order=onlyMistakes?[...new Set(mistakes)]:cards.map((_,i)=>i);
+ mistakes=[];
  position=0;points=0;answered=false;
  if(!order.length){alert("Помилок немає! Чудова робота.");return;}
  showScreen("game");renderCard();
@@ -157,14 +173,20 @@ function renderCard(){
  document.getElementById("category").textContent=card.c;
  document.getElementById("title").textContent=card.t;
  document.getElementById("question").textContent=card.q;
- document.getElementById("feedback").className="feedback";
- document.getElementById("feedback").textContent="";
+ document.getElementById("flipCard").classList.remove("flipped");
+ document.getElementById("answerText").textContent="";
+ document.getElementById("flipHint").textContent="Обери відповідь — картка перевернеться й відкриє пояснення";
  document.getElementById("next").disabled=true;
  document.getElementById("next").textContent=position===order.length-1?"Побачити результат →":"Наступна картка →";
  const box=document.getElementById("options");box.innerHTML="";
- card.a.forEach((answer,i)=>{
+ currentAnswers=card.a.map((answer,i)=>({answer,originalIndex:i}));
+ for(let i=currentAnswers.length-1;i>0;i--){
+  const j=Math.floor(Math.random()*(i+1));
+  [currentAnswers[i],currentAnswers[j]]=[currentAnswers[j],currentAnswers[i]];
+ }
+ currentAnswers.forEach((item,i)=>{
   const b=document.createElement("button");
-  b.className="option";b.textContent=answer;
+  b.className="option";b.textContent=item.answer;
   b.onclick=()=>choose(i);
   box.appendChild(b);
  });
@@ -173,18 +195,20 @@ function choose(index){
  if(answered)return;
  answered=true;
  const card=cards[order[position]];
+ const correctIndex=currentAnswers.findIndex(item=>item.originalIndex===card.correct);
  const buttons=[...document.querySelectorAll(".option")];
  buttons.forEach((b,i)=>{
   b.disabled=true;
-  if(i===card.correct)b.classList.add("correct");
-  if(i===index&&i!==card.correct)b.classList.add("wrong");
+  if(i===correctIndex)b.classList.add("correct");
+  if(i===index&&i!==correctIndex)b.classList.add("wrong");
  });
- const good=index===card.correct;
+ const good=index===correctIndex;
  if(good)points++;
  else mistakes.push(order[position]);
- const feedback=document.getElementById("feedback");
- feedback.innerHTML=`<strong>${good?"Правильно!":"Це не зовсім так."}</strong><br>${card.e}`;
- feedback.classList.add("show");
+ document.getElementById("answerLabel").textContent=good?"Правильно!":"Правильна відповідь: "+card.a[card.correct];
+ document.getElementById("answerText").textContent=card.e;
+ document.getElementById("flipCard").classList.add("flipped");
+ document.getElementById("flipHint").textContent="Відповідь відкрита — прочитай пояснення";
  document.getElementById("score").textContent=`Правильно: ${points}`;
  document.getElementById("next").disabled=false;
 }
