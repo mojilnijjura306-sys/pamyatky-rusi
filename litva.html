@@ -1,0 +1,476 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#203b35">
+<title>Українські землі у складі Великого князівства Литовського — інтерактивна гра</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root {
+  --green:#284c40;
+  --gold:#bd9657;
+  --paper:#f5f0e5;
+  --ink:#24332e;
+  --muted:#758078;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:Georgia,"Times New Roman",serif;
+}
+main{max-width:760px;margin:auto;padding:25px 20px 45px}
+header{text-align:center;padding:20px 0 25px}
+.eyebrow{font:600 11px system-ui;letter-spacing:3px;color:var(--gold);text-transform:uppercase}
+h1{font-size:clamp(38px,9vw,58px);line-height:1;margin:18px 0 12px}
+.subtitle{font:15px/1.5 system-ui;color:var(--muted)}
+.panel{background:#fffdf8;border:1px solid #e5ddce;border-radius:22px;padding:22px}
+.topline{display:flex;justify-content:space-between;gap:10px;align-items:center;font:13px system-ui;color:var(--muted)}
+.progress{height:7px;background:#e9e3d7;border-radius:10px;margin:16px 0 22px;overflow:hidden}
+.progress div{height:100%;width:0;background:var(--gold);transition:width .3s}
+.category{font:700 11px system-ui;letter-spacing:1.5px;text-transform:uppercase;color:#8b7045}
+h2{font-size:27px;line-height:1.15;margin:12px 0}
+.question{font:16px/1.5 system-ui;color:#53615b;margin:12px 0 20px}
+.options{display:grid;gap:10px}
+.option{
+ width:100%;text-align:left;padding:14px 15px;border:1px solid #ded8cb;
+ border-radius:13px;background:white;color:var(--ink);
+ font:15px/1.4 system-ui;cursor:pointer;
+}
+.option:disabled{cursor:default;opacity:1}
+.option.correct{background:#e3eee5;border-color:#50816a}
+.option.wrong{background:#f8e7e2;border-color:#bd6a55}
+.flip-wrap{perspective:1000px;margin:10px 0 18px}
+.flip-card{position:relative;display:grid;grid-template-columns:minmax(0,1fr);transform-style:preserve-3d;transition:transform .65s cubic-bezier(.2,.7,.2,1)}
+.flip-card.flipped{transform:rotateY(180deg)}
+.flip-face{position:relative;grid-area:1/1;min-width:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;padding:18px;background:#f0ede4;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box}
+.card-photo{display:block;flex:0 0 190px;width:100%;height:190px;object-fit:cover;border-radius:12px;margin:0 0 12px;background:#e4dfd4}
+.photo-credit{display:none;font:10px/1.4 system-ui;color:var(--muted);margin:-5px 0 12px}
+.photo-credit a{color:inherit;text-decoration:underline}
+.flip-back{transform:rotateY(180deg);background:#e8eee6;border:1px solid #cbd9cc}
+.flip-back strong{font:700 11px system-ui;letter-spacing:1px;text-transform:uppercase;color:#54745e}
+.flip-back p{font:14px/1.55 system-ui;margin:10px 0 0}
+.flip-hint{font:12px system-ui;color:var(--muted);text-align:center;margin:0 0 12px}
+.actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+button.primary,button.secondary{
+ border:0;border-radius:13px;padding:14px 18px;font:600 14px system-ui;cursor:pointer
+}
+button.primary{background:var(--green);color:white;flex:1}
+button.secondary{background:#e9e3d7;color:var(--ink)}
+button:disabled{opacity:.45;cursor:default}
+.stats{display:flex;justify-content:space-between;gap:8px;margin:18px 0;font:12px system-ui;color:var(--muted)}
+.stat strong{display:block;font-size:21px;color:var(--green)}
+.screen{display:none}
+.screen.active{display:block}
+.result{text-align:center;padding:25px 10px}
+.result .score{font-size:65px;color:var(--green);margin:12px}
+.result p{font:15px/1.6 system-ui;color:var(--muted)}
+footer{text-align:center;margin-top:25px;font:12px system-ui;color:var(--muted)}
+@media(max-width:420px){main{padding:15px 13px 35px}.panel{padding:17px}h2{font-size:24px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+ <div class="eyebrow">Історична інтерактивна колекція</div>
+ <h1>Україна<br>і Литва</h1>
+ <div class="subtitle">Досліджуй політику, суспільство та історичні події XIV–XVI століть</div>
+</header>
+
+<section id="intro" class="screen active panel">
+ <div class="category">Навчальна гра</div>
+ <h2>Українські землі у складі Великого князівства Литовського</h2>
+ <p class="question">На тебе чекають 20 запитань про приєднання руських земель, князів, державний устрій, унії, міста та право.</p>
+ <div class="stats">
+  <div class="stat"><strong>20</strong>карток</div>
+  <div class="stat"><strong>5</strong>розділів</div>
+  <div class="stat"><strong>∞</strong>можливість повторити</div>
+ </div>
+ <button class="primary" onclick="startGame(false)">Розпочати дослідження</button>
+ <footer>Обирай відповідь, читай пояснення та перевіряй свої знання.</footer>
+</section>
+
+<section id="game" class="screen panel">
+ <div class="topline">
+  <span id="counter">Картка 1 із 20</span>
+  <span id="score">Правильно: 0</span>
+ </div>
+ <div class="progress"><div id="bar"></div></div>
+ <div class="flip-wrap">
+  <div class="flip-card" id="flipCard">
+   <div class="flip-face">
+    <img class="card-photo" id="cardPhoto" alt="">
+    <div class="photo-credit" id="photoCredit"></div>
+    <div class="category" id="category"></div>
+    <h2 id="title"></h2>
+    <div class="question" id="question"></div>
+   </div>
+   <div class="flip-face flip-back">
+    <strong id="answerLabel">Історична довідка</strong>
+    <p id="answerText"></p>
+   </div>
+  </div>
+ </div>
+ <div class="flip-hint" id="flipHint">Обери відповідь — картка перевернеться й відкриє пояснення</div>
+ <div class="options" id="options"></div>
+ <div class="actions">
+  <button class="primary" id="next" disabled onclick="nextCard()">Наступна картка →</button>
+ </div>
+</section>
+
+<section id="result" class="screen panel result">
+ <div class="category">Дослідження завершено</div>
+ <h2>Твій результат</h2>
+ <div class="score" id="finalScore">0/20</div>
+ <p id="resultText"></p>
+ <button class="primary" onclick="startGame(false)">Пройти ще раз</button>
+ <button class="secondary" id="mistakesButton" onclick="startGame(true)" style="margin-top:12px;width:100%">Повторити помилки</button>
+</section>
+
+<footer>Навчальний проєкт «Пам’ятки культури та мистецтва Русі»</footer>
+</main>
+
+<script>
+const cards = [
+  {
+    "c": "Входження руських земель",
+    "t": "Велике князівство Литовське",
+    "q": "Яка частина території Великого князівства Литовського з часом складалася з руських земель?",
+    "a": [
+      "Значна частина держави",
+      "Лише невелика прикордонна смуга",
+      "Усі руські землі залишалися поза його межами"
+    ],
+    "correct": 0,
+    "e": "У XIV–XV століттях до складу Великого князівства Литовського увійшли великі території колишньої Русі, зокрема Волинь, Київщина, Чернігово-Сіверщина та Поділля. Тому держава була багатонаціональною й багатокультурною, а її політичний та культурний розвиток значною мірою спирався на руську спадщину.",
+    "img": "https://ujetimeline.org/wp-content/uploads/2021/01/03-01_Map_7_Magocsi_Grand_Duchy_Lithuania_Eng-med-1601x1080.jpg",
+    "credit": "Мапа: Paul Robert Magocsi · UJE Timeline",
+    "source": "https://ujetimeline.org/chapter-3/politics/"
+  },
+  {
+    "c": "Входження руських земель",
+    "t": "Князь Гедимін",
+    "q": "З якою династією пов’язане розширення Великого князівства Литовського на руські землі?",
+    "a": [
+      "Гедиміновичами",
+      "Рюриковичами",
+      "П’ястами"
+    ],
+    "correct": 0,
+    "e": "Гедиміновичі — династія, започаткована великим князем Гедиміном. Його нащадки правили у Великому князівстві Литовському та низці руських князівств. Через династичні зв’язки й політичне підпорядкування литовські князі посіли важливе місце в історії українських земель."
+  },
+  {
+    "c": "Входження руських земель",
+    "t": "Князь Ольгерд",
+    "q": "За правління якого великого князя литовського відбулося значне просування влади Литви на Київщину та Поділля?",
+    "a": [
+      "Ольгерда",
+      "Міндовга",
+      "Казимира IV"
+    ],
+    "correct": 0,
+    "e": "Ольгерд (Algirdas), великий князь литовський у 1345–1377 роках, розширив вплив держави на значну частину руських земель. Важливо пам’ятати, що цей процес відбувався по-різному: через військові кампанії, домовленості та династичні зв’язки."
+  },
+  {
+    "c": "Входження руських земель",
+    "t": "Битва на Синіх Водах",
+    "q": "У якому році традиційно датують битву на річці Сині Води?",
+    "a": [
+      "1362 роком",
+      "1385 роком",
+      "1410 роком"
+    ],
+    "correct": 0,
+    "e": "Битву на Синіх Водах традиційно датують 1362 роком. Війська Ольгерда перемогли сили ординських правителів. Ця подія сприяла поширенню влади Великого князівства Литовського на частину Поділля та Київщини. Деталі перебігу битви й точна локалізація місця залишаються предметом наукових дискусій."
+  },
+  {
+    "c": "Входження руських земель",
+    "t": "Луцький замок",
+    "q": "З яким князем пов’язують розбудову мурованого замку в Луцьку у XIV столітті?",
+    "a": [
+      "Любартом",
+      "Ольгердом",
+      "Вітовтом"
+    ],
+    "correct": 0,
+    "e": "Луцький замок, відомий як замок Любарта, пов’язаний із князем Любартом-Дмитром, сином Гедиміна. У XIV столітті він став важливим оборонним і політичним центром Волині.",
+    "img": "https://www.istvolyn.info/storage/uploads/imst1ZFIhzijGnrxABpNQyyXaHE04HrnNl98SAbL.jpg",
+    "credit": "Фото: Історична Волинь",
+    "source": "https://www.istvolyn.info/post/1815"
+  },
+  {
+    "c": "Влада та державний устрій",
+    "t": "Руська спадщина",
+    "q": "Що найточніше характеризує політику литовських князів на багатьох руських землях у XIV столітті?",
+    "a": [
+      "Збереження значної частини місцевих порядків і традицій",
+      "Негайне скасування всіх місцевих законів",
+      "Повне виселення руського населення"
+    ],
+    "correct": 0,
+    "e": "На багатьох руських землях литовські князі спочатку зберігали місцеві адміністративні практики, право, православну церковну організацію та станові привілеї. Водночас ступінь автономії відрізнявся залежно від регіону й змінювався з часом. Тому не варто уявляти цю політику як однакову для всіх територій."
+  },
+  {
+    "c": "Влада та державний устрій",
+    "t": "Руська канцелярська мова",
+    "q": "Яку мову широко використовували в діловодстві Великого князівства Литовського?",
+    "a": [
+      "Руську канцелярську мову",
+      "Лише латину",
+      "Лише литовську розмовну мову"
+    ],
+    "correct": 0,
+    "e": "У канцеляріях Великого князівства Литовського широко використовували руську писемну мову, традиційну для значної частини населення держави. Її називають руською канцелярською мовою; не слід ототожнювати її без застережень із сучасною українською чи білоруською мовами."
+  },
+  {
+    "c": "Влада та державний устрій",
+    "t": "Православна церква",
+    "q": "Яка конфесія мала давні й численні громади на українських землях у складі Великого князівства Литовського?",
+    "a": [
+      "Православ’я",
+      "Лютеранство",
+      "Кальвінізм"
+    ],
+    "correct": 0,
+    "e": "На українських землях переважало православне населення, діяли єпископії, монастирі та парафії Київської митрополії. Становище православної знаті й духовенства залежало від політики великих князів і поступово змінювалося під впливом польсько-литовських уній."
+  },
+  {
+    "c": "Влада та державний устрій",
+    "t": "Литовські статути",
+    "q": "Що являв собою Перший Литовський статут, ухвалений 1529 року?",
+    "a": [
+      "Звід законів Великого князівства Литовського",
+      "Мирний договір із Кримським ханством",
+      "Церковну грамоту про заснування митрополії"
+    ],
+    "correct": 0,
+    "e": "Перший Литовський статут 1529 року — кодифікований звід законів Великого князівства Литовського. Він упорядковував правові норми, судочинство та права різних станів. Наступні редакції з’явилися 1566 і 1588 років; третя вже була укладена після Люблінської унії."
+  },
+  {
+    "c": "Унії та політичні конфлікти",
+    "t": "Кревська унія",
+    "q": "У якому році було укладено Кревську унію між Польщею та Литвою?",
+    "a": [
+      "1385 році",
+      "1413 році",
+      "1569 році"
+    ],
+    "correct": 0,
+    "e": "Кревську унію уклали 1385 року. Великий князь литовський Ягайло погодився одружитися з польською королевою Ядвігою, прийняти католицтво та стати польським королем. Унія започаткувала династичне зближення Польщі й Литви, але не означала миттєвого зникнення Великого князівства Литовського."
+  },
+  {
+    "c": "Унії та політичні конфлікти",
+    "t": "Ягайло",
+    "q": "Яке ім’я отримав великий князь литовський Ягайло після хрещення за католицьким обрядом?",
+    "a": [
+      "Владислав",
+      "Вітовт",
+      "Свидригайло"
+    ],
+    "correct": 0,
+    "e": "Після хрещення Ягайло прийняв ім’я Владислав. У 1386 році він став королем Польщі як Владислав II Ягайло. Його шлюб із Ядвігою та домовленості Кревської унії започаткували тривале польсько-литовське династичне зближення."
+  },
+  {
+    "c": "Унії та політичні конфлікти",
+    "t": "Вітовт",
+    "q": "Хто був великим князем литовським у 1392–1430 роках і прагнув посилити самостійність держави?",
+    "a": [
+      "Вітовт",
+      "Любарт",
+      "Ольгерд"
+    ],
+    "correct": 0,
+    "e": "Вітовт (Вітаутас) правив у 1392–1430 роках. Він зміцнив центральну владу, розширив міжнародний вплив Великого князівства Литовського та провів адміністративні зміни. За його правління автономія частини руських удільних князівств поступово звужувалася."
+  },
+  {
+    "c": "Унії та політичні конфлікти",
+    "t": "Грюнвальдська битва",
+    "q": "Проти кого воювали об’єднані польсько-литовські сили в Грюнвальдській битві 1410 року?",
+    "a": [
+      "Проти Тевтонського ордену",
+      "Проти Османської імперії",
+      "Проти Кримського ханства"
+    ],
+    "correct": 0,
+    "e": "15 липня 1410 року союзні польсько-литовські війська та їхні союзники розгромили армію Тевтонського ордену. У битві брали участь і підрозділи з руських земель. Перемога послабила військово-політичну могутність ордену.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/8/86/Jan_Matejko_-_Battle_of_Grunwald_-_MP_443_-_National_Museum_in_Warsaw.jpg",
+    "credit": "Ян Матейко, «Грюнвальдська битва», 1878 · Wikimedia Commons",
+    "source": "https://commons.wikimedia.org/wiki/File:Jan_Matejko_-_Battle_of_Grunwald_-_MP_443_-_National_Museum_in_Warsaw.jpg"
+  },
+  {
+    "c": "Унії та політичні конфлікти",
+    "t": "Городельська унія",
+    "q": "Яке обмеження закріплювали домовленості Городельської унії 1413 року?",
+    "a": [
+      "Особливі політичні привілеї надавалися католицькій литовській знаті",
+      "Усі православні князі отримали однакові права з католиками",
+      "Литва переходила під владу Тевтонського ордену"
+    ],
+    "correct": 0,
+    "e": "Городельська унія 1413 року поглибила союз Польщі й Литви. Вона підтверджувала особливі права для католицької литовської знаті, що створювало нерівність щодо православних руських князів і бояр. Це стало одним із чинників релігійно-політичної напруги."
+  },
+  {
+    "c": "Унії та політичні конфлікти",
+    "t": "Свидригайло",
+    "q": "За підтримки якої частини знаті Свидригайло боровся за владу у Великому князівстві Литовському?",
+    "a": [
+      "Частини руської православної знаті",
+      "Лише Тевтонського ордену",
+      "Кримських генуезців"
+    ],
+    "correct": 0,
+    "e": "Свидригайло Ольгердович спирався, зокрема, на частину руської православної знаті, яка прагнула зберегти політичні позиції та автономію. Його боротьба за владу стала частиною громадянського конфлікту у Великому князівстві Литовському в першій половині XV століття."
+  },
+  {
+    "c": "Міста, право та суспільство",
+    "t": "Магдебурзьке право",
+    "q": "Що передбачало надання місту Магдебурзького права?",
+    "a": [
+      "Міське самоврядування та окрему систему судочинства",
+      "Звільнення всіх мешканців від податків",
+      "Право міста карбувати власну державну монету"
+    ],
+    "correct": 0,
+    "e": "Магдебурзьке право надавало містам елементи самоврядування: власні органи управління, виборні посади та окремі судові процедури. Воно не означало повної незалежності міста й не скасовувало всіх податків чи повинностей."
+  },
+  {
+    "c": "Міста, право та суспільство",
+    "t": "Костянтин Острозький",
+    "q": "Яку перемогу над московським військом здобув князь Костянтин Острозький у 1514 році?",
+    "a": [
+      "Під Оршею",
+      "Під Грюнвальдом",
+      "На Синіх Водах"
+    ],
+    "correct": 0,
+    "e": "8 вересня 1514 року війська Великого князівства Литовського під командуванням князя Костянтина Острозького перемогли московське військо в битві під Оршею. Острозький був одним із найвідоміших руських православних князів і воєначальників литовської доби."
+  },
+  {
+    "c": "Міста, право та суспільство",
+    "t": "Князі Олельковичі",
+    "q": "З яким містом насамперед пов’язана діяльність князів Олельковичів у XV столітті?",
+    "a": [
+      "Києвом",
+      "Львовом",
+      "Краковом"
+    ],
+    "correct": 0,
+    "e": "Олельковичі — князівська династія, яка правила в Київському удільному князівстві. За їхнього правління Київ залишався важливим політичним, церковним і культурним центром. У 1471 році удільне князівство було ліквідовано, а територію перетворено на воєводство."
+  },
+  {
+    "c": "Кінець литовської доби",
+    "t": "Ліквідація Київського князівства",
+    "q": "У якому році було ліквідовано Київське удільне князівство?",
+    "a": [
+      "1471 році",
+      "1362 році",
+      "1569 році"
+    ],
+    "correct": 0,
+    "e": "У 1471 році після смерті князя Семена Олельковича Київське удільне князівство ліквідували. Замість нього створили Київське воєводство, а князівську владу замінила адміністрація, призначувана великим князем литовським."
+  },
+  {
+    "c": "Кінець литовської доби",
+    "t": "Люблінська унія",
+    "q": "Яка подія 1569 року змінила державну належність більшості українських земель, що перебували у складі Литви?",
+    "a": [
+      "Люблінська унія",
+      "Кревська унія",
+      "Городельська унія"
+    ],
+    "correct": 0,
+    "e": "Люблінська унія 1569 року створила федеративну державу — Річ Посполиту — зі спільним монархом і сеймом. Більшість українських земель, які до того належали Великому князівству Литовському, зокрема Волинь, Київщина та Брацлавщина, перейшли під владу Польської Корони. Це стало важливим рубежем литовської доби в історії України."
+  }
+];
+
+let order=[], position=0, points=0, mistakes=[], answered=false, currentAnswers=[];
+
+function showScreen(id){
+ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function startGame(onlyMistakes){
+ order=onlyMistakes?[...new Set(mistakes)]:cards.map((_,i)=>i);
+ mistakes=[];
+ position=0;points=0;answered=false;
+ if(!order.length){alert("Помилок немає! Чудова робота.");return;}
+ showScreen("game");renderCard();
+}
+function renderCard(){
+ answered=false;
+ const card=cards[order[position]];
+ document.getElementById("counter").textContent=`Картка ${position+1} із ${order.length}`;
+ document.getElementById("score").textContent=`Правильно: ${points}`;
+ document.getElementById("bar").style.width=`${position/order.length*100}%`;
+ document.getElementById("category").textContent=card.c;
+ document.getElementById("title").textContent=card.t;
+ document.getElementById("question").textContent=card.q;
+ const photo=document.getElementById("cardPhoto"), credit=document.getElementById("photoCredit");
+ if(card.img){photo.onerror=()=>{photo.style.display="none";credit.innerHTML="";const fallback=document.createElement("a");fallback.href=card.source;fallback.target="_blank";fallback.rel="noopener";fallback.textContent="Фото недоступне — відкрити першоджерело";credit.appendChild(fallback);credit.style.display="block";};photo.onload=()=>{photo.style.display="block";};photo.alt="Фотографія пам’ятки: "+card.t;photo.loading="eager";photo.decoding="async";photo.style.display="block";photo.src=card.img;credit.innerHTML="";const link=document.createElement("a");link.href=card.source;link.target="_blank";link.rel="noopener";link.textContent=card.credit;credit.appendChild(link);credit.style.display="block";}
+ else{photo.removeAttribute("src");photo.style.display="none";credit.innerHTML="";if(card.source){const link=document.createElement("a");link.href=card.source;link.target="_blank";link.rel="noopener";link.textContent="Наукове джерело до картки";credit.appendChild(link);credit.style.display="block";}else{credit.style.display="none";}}
+ document.getElementById("flipCard").classList.remove("flipped");
+ document.getElementById("answerText").textContent="";
+ document.getElementById("flipHint").textContent="Обери відповідь — картка перевернеться й відкриє пояснення";
+ document.getElementById("next").disabled=true;
+ document.getElementById("next").textContent=position===order.length-1?"Побачити результат →":"Наступна картка →";
+ const box=document.getElementById("options");box.innerHTML="";
+ currentAnswers=card.a.map((answer,i)=>({answer,originalIndex:i}));
+ for(let i=currentAnswers.length-1;i>0;i--){
+  const j=Math.floor(Math.random()*(i+1));
+  [currentAnswers[i],currentAnswers[j]]=[currentAnswers[j],currentAnswers[i]];
+ }
+ currentAnswers.forEach((item,i)=>{
+  const b=document.createElement("button");
+  b.className="option";b.textContent=item.answer;
+  b.onclick=()=>choose(i);
+  box.appendChild(b);
+ });
+}
+function choose(index){
+ if(answered)return;
+ answered=true;
+ const card=cards[order[position]];
+ const correctIndex=currentAnswers.findIndex(item=>item.originalIndex===card.correct);
+ const buttons=[...document.querySelectorAll(".option")];
+ buttons.forEach((b,i)=>{
+  b.disabled=true;
+  if(i===correctIndex)b.classList.add("correct");
+  if(i===index&&i!==correctIndex)b.classList.add("wrong");
+ });
+ const good=index===correctIndex;
+ if(good)points++;
+ else mistakes.push(order[position]);
+ document.getElementById("answerLabel").textContent=good?"Правильно!":"Правильна відповідь: "+card.a[card.correct];
+ document.getElementById("answerText").textContent=card.e;
+ document.getElementById("flipCard").classList.add("flipped");
+ document.getElementById("flipHint").textContent="Відповідь відкрита — прочитай пояснення";
+ document.getElementById("score").textContent=`Правильно: ${points}`;
+ document.getElementById("next").disabled=false;
+}
+function nextCard(){
+ if(!answered)return;
+ position++;
+ if(position>=order.length){finish();return;}
+ renderCard();
+}
+function finish(){
+ showScreen("result");
+ const total=order.length;
+ document.getElementById("finalScore").textContent=`${points}/${total}`;
+ const percent=Math.round(points/total*100);
+ document.getElementById("resultText").textContent=
+  percent===100?"Чудово! Ти бездоганно впорався із завданням.":
+  percent>=70?"Гарний результат! Повтори складніші теми й рухайся далі.":
+  percent>=40?"Непогано! Повторення допоможе краще запам’ятати пам’ятки.":
+  "Це чудова нагода познайомитися з пам’ятками ще раз.";
+ document.getElementById("mistakesButton").style.display=mistakes.length?"block":"none";
+}
+if(window.Telegram?.WebApp){
+ window.Telegram.WebApp.ready();
+ window.Telegram.WebApp.expand();
+}
+</script>
+</body>
+</html>
