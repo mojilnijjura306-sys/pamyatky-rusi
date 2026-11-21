@@ -87,7 +87,7 @@ footer{text-align:center;margin-top:25px;font:12px system-ui;color:var(--muted)}
   <div class="stat"><strong>5</strong>розділів</div>
   <div class="stat"><strong>∞</strong>можливість повторити</div>
  </div>
- <button class="primary" onclick="startGame(false)">Розпочати дослідження</button>
+ <button class="primary" id="startGameButton" type="button">Розпочати дослідження</button>
  <footer>Обирай відповідь, читай пояснення та перевіряй свої знання.</footer>
 </section>
 
@@ -466,6 +466,8 @@ function finish(){
   "Це чудова нагода познайомитися з пам’ятками ще раз.";
  document.getElementById("mistakesButton").style.display=mistakes.length?"block":"none";
 }
+document.getElementById("startGameButton")?.addEventListener("click", () => startGame(false));
+window.startGame = startGame;
 if(window.Telegram?.WebApp){
  window.Telegram.WebApp.ready();
  window.Telegram.WebApp.expand();
