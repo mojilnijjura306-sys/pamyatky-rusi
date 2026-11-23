@@ -10,5 +10,8 @@
 | Тема 5 · Литовська доба | Українські землі у складі Великого князівства Литовського (20 карток) | https://mojilnijjura306-sys.github.io/pamyatky-rusi/litva.html |
 | Тема 5 · Сусідні держави | Українські землі у складі Польщі, Угорщини, Молдови й Кримського ханства (27 карток) | https://mojilnijjura306-sys.github.io/pamyatky-rusi/ukrainski-zemli-polshcha-uhorshchyna-moldova-krym.html |
 | Тема 5 · Карта | Картографічний тренажер: українські землі XIV–XVI ст. (20 завдань) | https://mojilnijjura306-sys.github.io/pamyatky-rusi/mapa-ukrainski-zemli-xiv-xvi.html |
+| Тема 5 · Литовсько-польська доба | Тренажер перед тестом: дати, діячі, унії й привілеї, Кримське ханство, 7 пам’яток за ч/б фото (31 картка) | https://mojilnijjura306-sys.github.io/pamyatky-rusi/lytovsko-polska-doba.html |
+
+Фото пам’яток — з Wikimedia Commons; автор і ліцензія вказані під кожним фото.
 
 Дати звірено з програмою НМТ з історії України (наприклад, 1449 — утворення Кримського ханства, 1475 — васальна залежність від Османської імперії).
