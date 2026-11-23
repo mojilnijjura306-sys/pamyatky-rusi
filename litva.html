@@ -296,7 +296,7 @@ const cards = [
     ],
     "correct": 0,
     "e": "15 липня 1410 року союзні польсько-литовські війська та їхні союзники розгромили армію Тевтонського ордену. У битві брали участь і підрозділи з руських земель. Перемога послабила військово-політичну могутність ордену.",
-    "img": "https://upload.wikimedia.org/wikipedia/commons/8/86/Jan_Matejko_-_Battle_of_Grunwald_-_MP_443_-_National_Museum_in_Warsaw.jpg",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Jan_Matejko_-_Battle_of_Grunwald_-_MP_443_-_National_Museum_in_Warsaw.jpg/1280px-Jan_Matejko_-_Battle_of_Grunwald_-_MP_443_-_National_Museum_in_Warsaw.jpg",
     "credit": "Ян Матейко, «Грюнвальдська битва», 1878 · Wikimedia Commons",
     "source": "https://commons.wikimedia.org/wiki/File:Jan_Matejko_-_Battle_of_Grunwald_-_MP_443_-_National_Museum_in_Warsaw.jpg"
   },
@@ -409,7 +409,7 @@ function renderCard(){
  document.getElementById("title").textContent=card.t;
  document.getElementById("question").textContent=card.q;
  const photo=document.getElementById("cardPhoto"), credit=document.getElementById("photoCredit");
- if(card.img){photo.onerror=()=>{photo.style.display="none";credit.innerHTML="";const fallback=document.createElement("a");fallback.href=card.source;fallback.target="_blank";fallback.rel="noopener";fallback.textContent="Фото недоступне — відкрити першоджерело";credit.appendChild(fallback);credit.style.display="block";};photo.onload=()=>{photo.style.display="block";};photo.alt="Фотографія пам’ятки: "+card.t;photo.loading="eager";photo.decoding="async";photo.style.display="block";photo.src=card.img;credit.innerHTML="";const link=document.createElement("a");link.href=card.source;link.target="_blank";link.rel="noopener";link.textContent=card.credit;credit.appendChild(link);credit.style.display="block";}
+ if(card.img){photo.onerror=()=>{photo.style.display="none";credit.innerHTML="";const fallback=document.createElement("a");fallback.href=card.source;fallback.target="_blank";fallback.rel="noopener";fallback.textContent="Фото недоступне — відкрити першоджерело";credit.appendChild(fallback);credit.style.display="block";};photo.onload=()=>{photo.style.display="block";};photo.alt="Ілюстрація: "+card.t;photo.loading="eager";photo.decoding="async";photo.style.display="block";photo.src=card.img;credit.innerHTML="";const link=document.createElement("a");link.href=card.source;link.target="_blank";link.rel="noopener";link.textContent=card.credit;credit.appendChild(link);credit.style.display="block";}
  else{photo.removeAttribute("src");photo.style.display="none";credit.innerHTML="";if(card.source){const link=document.createElement("a");link.href=card.source;link.target="_blank";link.rel="noopener";link.textContent="Наукове джерело до картки";credit.appendChild(link);credit.style.display="block";}else{credit.style.display="none";}}
  document.getElementById("flipCard").classList.remove("flipped");
  document.getElementById("answerText").textContent="";
@@ -464,8 +464,8 @@ function finish(){
  document.getElementById("resultText").textContent=
   percent===100?"Чудово! Ти бездоганно впорався із завданням.":
   percent>=70?"Гарний результат! Повтори складніші теми й рухайся далі.":
-  percent>=40?"Непогано! Повторення допоможе краще запам’ятати пам’ятки.":
-  "Це чудова нагода познайомитися з пам’ятками ще раз.";
+  percent>=40?"Непогано! Повторення допоможе краще запам’ятати литовську добу.":
+  "Це чудова нагода ще раз повторити литовську добу.";
  document.getElementById("mistakesButton").style.display=mistakes.length?"block":"none";
 }
 document.getElementById("startGameButton")?.addEventListener("click", () => startGame(false));

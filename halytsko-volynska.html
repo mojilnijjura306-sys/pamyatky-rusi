@@ -86,7 +86,7 @@ footer{text-align:center;margin-top:25px;font:12px system-ui;color:var(--muted)}
  <p class="question">На тебе чекають 20 запитань про князів, державний розвиток, монгольську навалу, дипломатію, міста та культуру.</p>
  <div class="stats">
   <div class="stat"><strong>20</strong>карток</div>
-  <div class="stat"><strong>5</strong>розділів</div>
+  <div class="stat"><strong>8</strong>розділів</div>
   <div class="stat"><strong>∞</strong>можливість повторити</div>
  </div>
  <button class="primary" id="startGameButton" type="button">Розпочати дослідження</button>
@@ -373,7 +373,7 @@ const cards = [
       "Утворення Галицької митрополії"
     ],
     "correct": 0,
-    "e": "У 1340 році помер князь Юрій II Болеслав. Після його смерті загострилася боротьба за спадщину Галицько-Волинської держави за участю Польщі, Угорщини та Литви. Цей рік традиційно вважають завершенням існування держави як єдиного політичного утворення."
+    "e": "У 1340 році бояри отруїли князя Юрія II Болеслава. Після його смерті загострилася боротьба за спадщину Галицько-Волинської держави за участю Польщі, Угорщини та Литви. Цей рік традиційно вважають завершенням існування держави як єдиного політичного утворення."
   }
 ];
 let order=[], position=0, points=0, mistakes=[], answered=false, currentAnswers=[];
@@ -456,7 +456,7 @@ function finish(){
   percent===100?"Чудово! Ти бездоганно впорався із завданням.":
   percent>=70?"Гарний результат! Повтори складніші питання й рухайся далі.":
   percent>=40?"Непогано! Повторення допоможе краще зрозуміти історію держави.":
-  "Це чудова нагода познайомитися з пам’ятками ще раз.";
+  "Це чудова нагода ще раз повторити історію Галицько-Волинської держави.";
  document.getElementById("mistakesButton").style.display=mistakes.length?"block":"none";
 }
 document.getElementById("startGameButton")?.addEventListener("click", () => startGame(false));
