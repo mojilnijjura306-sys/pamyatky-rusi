@@ -4,7 +4,7 @@
 ## Ігри
 | Тема | Гра | Посилання |
 |---|---|---|
-| Тема 3 · Русь | Пам’ятки Русі: архітектура, мозаїки, книжки, прикраси (20 карток) | https://mojilnijjura306-sys.github.io/pamyatky-rusi/ |
+| Тема 3 · Русь | Пам’ятки Русі: архітектура, мозаїки, ікони, книжки, прикраси (24 картки) | https://mojilnijjura306-sys.github.io/pamyatky-rusi/ |
 | Тема 4 · Королівство Руське | Галицько-Волинська держава: князі, навала, корона (20 карток) | https://mojilnijjura306-sys.github.io/pamyatky-rusi/halytsko-volynska.html |
 | Тема 4 · Королівство Руське | Культура Галицько-Волинської держави (20 карток) | https://mojilnijjura306-sys.github.io/pamyatky-rusi/halytsko-volyn-culture.html |
 | Тема 5 · Литовська доба | Українські землі у складі Великого князівства Литовського (20 карток) | https://mojilnijjura306-sys.github.io/pamyatky-rusi/litva.html |
